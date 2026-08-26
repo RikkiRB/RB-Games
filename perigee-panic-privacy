@@ -1,48 +1,142 @@
-PERIGEE PANIC Privacy Policy
-Last updated: 26 August 2026
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PERIGEE PANIC Privacy Policy | RB Games</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0a0f1f;
+      color: #eaf2ff;
+      line-height: 1.6;
+    }
 
-PERIGEE PANIC is developed and published by RB Games.
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
 
-RB Games respects your privacy and aims to collect only the minimum information required for the game to function.
+    h1 {
+      margin-bottom: 8px;
+      font-size: 2.4rem;
+      color: #ffffff;
+    }
 
-Information we collect:
-PERIGEE PANIC does not require users to create an account or sign in.
-If you choose to submit a score to the in-game leaderboard, the game sends:
-- the player name or nickname you entered
-- your game score
-This information is used only to provide leaderboard functionality.
-How the information is used
-Leaderboard data is used to:
-- display player names and scores
-- rank submitted scores
-- provide the in-game leaderboard
+    h2 {
+      margin-top: 36px;
+      color: #65c7ff;
+      font-size: 1.35rem;
+    }
 
-RB Games does not use this information for advertising, profiling, targeted marketing or selling user data.
-Third-party services
-PERIGEE PANIC uses GDevelop leaderboard services to process and store leaderboard submissions.
-Leaderboard data is transmitted over an encrypted connection.
-You can review GDevelop's privacy information on the GDevelop website.
+    p,
+    li {
+      color: #d8e4f2;
+    }
 
-Advertising
-PERIGEE PANIC contains no advertising.
-Payments
-The current version of PERIGEE PANIC does not contain in-app purchases or paid digital goods.
+    .updated {
+      color: #8fa6bf;
+      margin-bottom: 32px;
+    }
 
-Accounts
-PERIGEE PANIC does not create or require user accounts.
+    .card {
+      background: #11182b;
+      border: 1px solid #24314d;
+      border-radius: 14px;
+      padding: 24px;
+      margin-top: 24px;
+    }
 
-Children
-PERIGEE PANIC is an arcade game intended for a general audience and is not specifically directed at children.
+    ul {
+      padding-left: 22px;
+    }
 
-Data choices
-Submitting a leaderboard score is optional. You may play the game without submitting your name or score.
+    a {
+      color: #65c7ff;
+    }
 
-Data retention and deletion
-Leaderboard submissions may be retained by the leaderboard service in order to provide leaderboard functionality.
-RB Games does not currently provide an automated in-game method for deleting leaderboard submissions.
-If you have a privacy or data-related question, you may contact RB Games using the contact information provided on the official RB Games website.
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #24314d;
+      color: #8fa6bf;
+      font-size: 0.95rem;
+    }
 
-Contact
-dev.outpost503@passinbox.com
-RB Games
-Official website: https://rikkirb.github.io/RB-Games/
+    strong {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>PERIGEE PANIC Privacy Policy</h1>
+    <p class="updated">Last updated: 26 August 2026</p>
+
+    <div class="card">
+      <p><strong>PERIGEE PANIC</strong> is developed and published by <strong>RB Games</strong>.</p>
+      <p>RB Games respects your privacy and aims to collect only the minimum information required for the game to function.</p>
+    </div>
+
+    <h2>Information we collect</h2>
+    <p>PERIGEE PANIC does not require users to create an account or sign in.</p>
+    <p>If you choose to submit a score to the in-game leaderboard, the game sends:</p>
+    <ul>
+      <li>the player name or nickname you entered</li>
+      <li>your game score</li>
+    </ul>
+    <p>This information is used only to provide leaderboard functionality.</p>
+
+    <h2>How the information is used</h2>
+    <p>Leaderboard data is used to:</p>
+    <ul>
+      <li>display player names and scores</li>
+      <li>rank submitted scores</li>
+      <li>provide the in-game leaderboard</li>
+    </ul>
+    <p>RB Games does not use this information for advertising, profiling, targeted marketing, or selling user data.</p>
+
+    <h2>Third-party services</h2>
+    <p>PERIGEE PANIC uses GDevelop leaderboard services to process and store leaderboard submissions.</p>
+    <p>Leaderboard data is transmitted over an encrypted connection.</p>
+    <p>You can review GDevelop's privacy information on the GDevelop website.</p>
+
+    <h2>Advertising</h2>
+    <p>PERIGEE PANIC contains no advertising.</p>
+
+    <h2>Payments</h2>
+    <p>The current version of PERIGEE PANIC does not contain in-app purchases or paid digital goods.</p>
+
+    <h2>Accounts</h2>
+    <p>PERIGEE PANIC does not create or require user accounts.</p>
+
+    <h2>Children</h2>
+    <p>PERIGEE PANIC is an arcade game intended for a general audience and is not specifically directed at children.</p>
+
+    <h2>Data choices</h2>
+    <p>Submitting a leaderboard score is optional. You may play the game without submitting your name or score.</p>
+
+    <h2>Data retention and deletion</h2>
+    <p>Leaderboard submissions may be retained by the leaderboard service in order to provide leaderboard functionality.</p>
+    <p>RB Games does not currently provide an automated in-game method for deleting leaderboard submissions.</p>
+    <p>If you have a privacy or data-related question, you may contact RB Games using the contact information below.</p>
+
+    <h2>Contact</h2>
+    <p>
+      <strong>RB Games</strong><br>
+      Email:
+      <a href="mailto:dev.outpost503@passinbox.com">dev.outpost503@passinbox.com</a><br>
+      Official website:
+      <a href="https://rikkirb.github.io/RB-Games/" target="_blank" rel="noopener noreferrer">
+        https://rikkirb.github.io/RB-Games/
+      </a>
+    </p>
+
+    <div class="footer">
+      <p>© 2026 RB Games. All rights reserved.</p>
+    </div>
+  </main>
+</body>
+</html>
