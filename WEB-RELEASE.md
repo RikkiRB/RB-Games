@@ -39,13 +39,20 @@ business verification and accepting provider terms are owner actions.
    platform's gateway JWT check because Stripe cannot supply a Supabase JWT.
    Every account route instead verifies the Bearer token with `/auth/v1/user`;
    the webhook requires a valid Stripe signature over the raw request body.
-5. Configure these **server-side secrets/settings**, never website files:
+   For the Supabase GitHub integration, select `RikkiRB/RB-Games`, set the
+   working directory to `.`, and enable **Deploy to production** from `main`.
+   A new push applies the pending migration and deploys the declared function.
+5. Configure these **server-side settings**, never website files. Supabase
+   automatically supplies the three `SUPABASE_` values to deployed functions;
+   names beginning with `SUPABASE_` cannot be added on the Edge Function Secrets
+   page. Add the remaining settings there as key/value entries (the `false`
+   values are strings, not switches):
 
    | Name | Value |
    | --- | --- |
-   | `SUPABASE_URL` | Your project's HTTPS URL; normally already available |
-   | `SUPABASE_ANON_KEY` | Your project's public anon key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | Server-only service role key; normally supplied by Supabase |
+   | `SUPABASE_URL` | Project HTTPS URL; supplied by Supabase |
+   | `SUPABASE_ANON_KEY` | Public legacy anon key; supplied by Supabase |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Server-only legacy service role key; supplied by Supabase |
    | `WEB_GAME_URL` | Exact deployed URL ending in `/play/` |
    | `STRIPE_SECRET_KEY` | Test secret first; live secret after verification |
    | `STRIPE_PRICE_ID` | The EUR 2.99 one-time price in the same mode |

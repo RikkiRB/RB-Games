@@ -1,4 +1,6 @@
 # The handler verifies user tokens itself with Supabase Auth. Only public-config
 # and signature-verified Stripe webhooks are public routes.
+# With the Supabase GitHub integration, use working directory "." and enable
+# production deployments from main to apply migrations and deploy this function.
 [functions.perigee-api]
 verify_jwt = false
