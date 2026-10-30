@@ -191,7 +191,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
       let result;
       if (request.method === 'GET' && path === '/public-config') {
         let price = null; if (ready()) { try { price = await getPrice(); } catch { /* Unavailable price keeps checkout disabled. */ } }
-        result = { checkoutReady: ready() && !!price, price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON };
+        result = { checkoutReady: ready() && !!price, paymentsLive: env.PAYMENTS_LIVE === 'true', price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON };
       } else if (request.method === 'POST' && path === '/stripe-webhook') result = await processWebhook(request);
       else if (request.method === 'GET' && path === '/me') result = await me(await authenticate(request));
       else if (request.method === 'POST' && path === '/checkout') result = await createCheckout(await authenticate(request));

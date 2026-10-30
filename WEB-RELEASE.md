@@ -98,7 +98,9 @@ execute this backend. The function and database run in Supabase.
 - Supabase Auth email sign-in is enabled. The site URL and one exact redirect
   URL point to `https://rikkirb.github.io/RB-Games/play/`. While commerce is
   disabled, open `/play/?accounts_preview=1` to show the sign-in controls for
-  owner testing; normal visitors keep the existing free-play page.
+  owner testing; normal visitors keep the existing free-play page. Even when
+  test checkout is enabled, its controls only appear in this preview, and the
+  button is labelled as a sandbox test.
 - The RB Games Stripe sandbox has a one-off €2.99 price
   `price_1UWHgV231475JVEeeacUcOqM` on product `prod_VXMPrg3bA1bOUT`.
 - The sandbox Snapshot webhook destination `we_1UWHjK231475JVEeAp0nwdbn`

@@ -103,6 +103,7 @@ test('partial refunds preserve access; a test/live environment mismatch is rejec
 test('client cannot choose a cheaper product; unconfigured checkout stays disabled', async () => {
   const f = fixture();
   assert.equal((await f.request('/checkout', { method: 'POST', body: { price: 'cheap', amount: 1, user_id: OTHER } })).status, 200);
+  assert.equal((await (await f.request('/public-config')).json()).paymentsLive, false);
   const disabled = fixture({ env: { COMMERCE_ENABLED: 'false' } });
   assert.equal((await (await disabled.request('/public-config')).json()).checkoutReady, false);
   assert.equal((await disabled.request('/checkout', { method: 'POST' })).status, 503);

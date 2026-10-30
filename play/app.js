@@ -14,7 +14,7 @@ const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(config.supabas
 const accountsPreview = new URLSearchParams(location.search).has('accounts_preview');
 const audience = new URL('./', location.href).href;
 let session = read(SESSION_KEY);
-let state = { owned: false, ready: false, price: '', verification: 'unverified' };
+let state = { owned: false, ready: false, paymentsLive: false, price: '', verification: 'unverified' };
 let refreshPromise, pendingEmail = '', installPrompt, serviceWorker, checkoutBusy = false;
 
 function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
@@ -32,8 +32,8 @@ function renderAccount() {
   $('account-email').textContent = session?.user?.email || '';
   $('ownership-status').textContent = state.owned ? 'Full Content Upgrade owned. Your cosmetic pack is unlocked.' : 'Your cosmetic pack is not unlocked on this account.';
   $('buy-button').disabled = !state.ready || state.owned || checkoutBusy;
-  $('buy-button').textContent = state.owned ? 'Already owned' : state.price ? 'Unlock cosmetic pack · ' + state.price : 'Purchases unavailable';
-  $('pack-status').textContent = state.owned ? 'Your cosmetic pack is unlocked in the Hangar.' : state.ready ? 'Optional cosmetic pack. Sign in to buy or restore your purchase.' : 'Browser add-on purchases are not available yet. The free game is ready to play.';
+  $('buy-button').textContent = state.owned ? 'Already owned' : state.price ? (state.paymentsLive ? 'Unlock cosmetic pack · ' : 'Test checkout · ') + state.price : 'Purchases unavailable';
+  $('pack-status').textContent = state.owned ? 'Your cosmetic pack is unlocked in the Hangar.' : state.ready ? (state.paymentsLive ? 'Optional cosmetic pack. Sign in to buy or restore your purchase.' : 'Sandbox test checkout only. No real charge; use a Stripe test card.') : 'Browser add-on purchases are not available yet. The free game is ready to play.';
   const showAccounts = configured && (state.ready || accountsPreview || signedIn || !!authRedirect);
   $('account-button').hidden = !showAccounts;
   $('pack-button').hidden = !showAccounts;
@@ -131,7 +131,10 @@ async function loadShop() {
   if (!configured) return;
   try {
     const info = await requestJson(config.apiUrl + '/public-config');
-    state.ready = info.checkoutReady === true;
+    state.paymentsLive = info.paymentsLive === true;
+    // A sandbox checkout should only appear when the owner opens the preview URL
+    // or returns from its sign-in email. Real visitors keep the free-play view.
+    state.ready = info.checkoutReady === true && (state.paymentsLive || accountsPreview || !!authRedirect);
     if (info.price && Number.isInteger(info.price.amount) && /^[a-z]{3}$/.test(info.price.currency)) {
       state.price = new Intl.NumberFormat(navigator.language, { style: 'currency', currency: info.price.currency }).format(info.price.amount / 100);
     }
