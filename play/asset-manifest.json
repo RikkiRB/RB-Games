@@ -1,6 +1,6 @@
 {
-  "version": "de6c7348edf362f3",
-  "totalBytes": 118208057,
+  "version": "977fb61c396acc09",
+  "totalBytes": 118211378,
   "assets": [
     "../assets/earth.png",
     "../assets/rb-games-horizontal.svg",
@@ -9,6 +9,7 @@
     "app.css",
     "app.js",
     "config.js",
+    "game-bridge.js",
     "game/00_Orangeexplosion.png",
     "game/00_PERIGEE_PANIC_Blue_Explosion Medium.png",
     "game/00_PERIGEE_PANIC_Blue_Explosion.png",

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile, access } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 async function workerFixture() {
   const scope = 'https://rikkirb.github.io/RB-Games/play/';
@@ -68,6 +70,8 @@ test('every shipped game resource exists, and exported scripts resolve on a proj
   for (const [, file] of html.matchAll(/<script[^>]+src="([^"]+)"/g)) {
     assert.ok(!/^https?:/.test(file), 'Game boot must not need a remote script: ' + file);
     await access(new URL(file, new URL('play/game/', base)));
+    const relative = path.relative(fileURLToPath(new URL('play/', base)), fileURLToPath(new URL(file, new URL('play/game/', base)))).replaceAll(path.sep, '/');
+    assert.ok(manifest.assets.includes(relative), 'Every boot script must be cached for offline launch: ' + relative);
   }
   const sandbox = { gdjs: {} };
   vm.runInNewContext(await readFile(new URL('../play/game/data.js', import.meta.url), 'utf8'), sandbox);
