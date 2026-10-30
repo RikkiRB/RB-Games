@@ -291,7 +291,8 @@ elseEventsChainSatisfied = true;
 
 }
 
-};gdjs.GameOverCode.eventsList4 = function(runtimeScene) {
+};gdjs.GameOverCode.mapOfGDgdjs_9546GameOverCode_9546GDBG_95959595ButtonObjects1Objects = Hashtable.newFrom({"BG_Button": gdjs.GameOverCode.GDBG_9595ButtonObjects1});
+gdjs.GameOverCode.eventsList4 = function(runtimeScene) {
 
 {
 
@@ -454,6 +455,8 @@ gdjs.copyArray(runtimeScene.getObjects("RBPC_NamePanel"), gdjs.GameOverCode.GDRB
 {for(var i = 0, len = gdjs.GameOverCode.GDRBPC_9595NameHintObjects1.length ;i < len;++i) {
     gdjs.GameOverCode.GDRBPC_9595NameHintObjects1[i].hide();
 }
+}
+{gdjs.evtTools.object.pickAllObjects(runtimeScene, gdjs.GameOverCode.mapOfGDgdjs_9546GameOverCode_9546GDBG_95959595ButtonObjects1Objects);
 }
 {for(var i = 0, len = gdjs.GameOverCode.GDBG_9595ButtonObjects1.length ;i < len;++i) {
     gdjs.GameOverCode.GDBG_9595ButtonObjects1[i].hide();
