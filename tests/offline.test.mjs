@@ -5,15 +5,22 @@ import { readFile, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-async function workerFixture() {
+async function workerFixture({ redirectHtml = false } = {}) {
   const scope = 'https://rikkirb.github.io/RB-Games/play/';
   const listeners = new Map(), stores = new Map();
   let online = true, failFile = '';
   const networkCalls = [];
+  const followedRedirect = response => {
+    const clone = response.clone.bind(response);
+    Object.defineProperty(response, 'redirected', { value: true });
+    response.clone = () => followedRedirect(clone());
+    return response;
+  };
   const fetcher = async input => {
     const url = typeof input === 'string' ? input : input.url; networkCalls.push(url);
     if (!online || url.endsWith(failFile || 'not-a-real-file')) throw new Error('Offline');
-    return new Response(url.endsWith('sound.wav') ? '0123456789' : 'content:' + url, { headers: { 'Content-Type': url.endsWith('.wav') ? 'audio/wav' : 'text/plain' } });
+    const response = new Response(url.endsWith('sound.wav') ? '0123456789' : 'content:' + url, { headers: { 'Content-Type': url.endsWith('.wav') ? 'audio/wav' : 'text/plain' } });
+    return redirectHtml && url.endsWith('index.html') ? followedRedirect(response) : response;
   };
   const caches = {
     keys: async () => [...stores.keys()], delete: async key => stores.delete(key),
@@ -25,7 +32,7 @@ async function workerFixture() {
   stores.set('unrelated-website-cache', new Map());
   const self = { registration: { scope }, location: { origin: 'https://rikkirb.github.io' }, clients: { claim: async () => {} }, addEventListener: (type, callback) => listeners.set(type, callback) };
   let source = await readFile(new URL('../scripts/service-worker.template.js', import.meta.url), 'utf8');
-  source = source.replace('__VERSION__', '"test-v1"').replace('__ASSETS__', JSON.stringify(['index.html', 'game/code.js', 'game/sound.wav'])).replace('__SHELL__', JSON.stringify(['index.html']));
+  source = source.replace('__VERSION__', '"test-v1"').replace('__ASSETS__', JSON.stringify(['index.html', 'game/index.html', 'game/code.js', 'game/sound.wav'])).replace('__SHELL__', JSON.stringify(['index.html']));
   vm.runInNewContext(source, { self, caches, fetch: fetcher, Request, Response, Headers, URL, Set, Promise, Error, Number });
   const dispatch = async type => { let work; listeners.get(type)({ waitUntil: promise => { work = promise; } }); await work; };
   const get = async (url, { range, navigate = false } = {}) => {
@@ -60,6 +67,18 @@ test('interrupted offline download reports failure rather than claiming it is sa
   const f = await workerFixture(); await f.dispatch('install'); f.fail('game/code.js');
   const messages = await f.download(); assert.equal(messages.at(-1).type, 'error');
   assert.ok(!messages.some(message => message.type === 'done'));
+});
+test('canonical directory navigations work online and offline after host HTML redirects', async () => {
+  const f = await workerFixture({ redirectHtml: true }); await f.dispatch('install');
+  const onlineGame = await f.get(f.scope + 'game/', { navigate: true });
+  assert.equal(onlineGame.status, 200); assert.equal(onlineGame.redirected, false);
+  assert.equal(await onlineGame.text(), 'content:' + f.scope + 'game/index.html');
+  f.offline();
+  for (const url of [f.scope, f.scope + 'game/', f.scope + 'game/index.html']) {
+    const response = await f.get(url, { navigate: true });
+    assert.equal(response.status, 200); assert.equal(response.redirected, false);
+    assert.match(await response.text(), /content:.*index\.html$/);
+  }
 });
 test('every shipped game resource exists, and exported scripts resolve on a project Pages site', async () => {
   const base = new URL('../', import.meta.url);

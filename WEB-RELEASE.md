@@ -9,6 +9,8 @@ The original GDevelop project and Android billing events have not been edited.
 
 - Free browser play is functional without an account.
 - The page and game work under `/RB-Games/play/` as well as `/play/`.
+- The production website is public at `https://rbgames.dev/`, with the game at
+  `https://rbgames.dev/play/`. Domain verification and HTTPS are active.
 - Offline files download only after the player chooses to save them. The current
   release is about 113 MB. Browser storage can be evicted; it is not permanent.
 - Leaderboards and buying/restoring require internet access.
@@ -93,8 +95,8 @@ business verification and accepting provider terms are owner actions.
 
 The function and database run in Supabase. GitHub remains the source repository.
 GitHub Pages excludes e-commerce hosting under its terms, so the purchase-enabled
-production frontend is being moved to Sites. The original public free-play page
-continues to run while production settings are prepared.
+production frontend is hosted on Sites at `rbgames.dev`. The original public
+free-play page continues to run while production payment settings are prepared.
 
 ### Test setup on 30 October 2026
 
@@ -117,21 +119,30 @@ continues to run while production settings are prepared.
 - Live Stripe account: `acct_1UWEnH0t7N7N9G5J` (RB Games).
 - Live product: `prod_VXSutpEr1bUKej`, PERIGEE PANIC — Full Content Upgrade.
 - Live one-time price: `price_1UWNyf0t7N7N9G5JNFyRmDAH`, EUR 2.99, tax-inclusive.
-- Production frontend is deployed as an owner-private review copy at
-  `https://rb-games.rbgam.chatgpt.site/play/`.
+- Production frontend is public at `https://rbgames.dev/play/`, hosted on Sites
+  project `appgprj_6ae5174a54448191bb54be8fc4600f95`. The root domain and HTTPS
+  are active. The original Sites URL remains an alternative hosting address.
+- Cloudflare Email Routing was enabled by the owner; its MX, SPF and DKIM records
+  are preserved. Routing receives/forwards mail and does not supply Supabase SMTP.
+- Cloudflare Email Sending requires Workers Paid. No paid plan was purchased.
+  Resend's free SMTP plan is the prepared alternative, pending owner sign-in and
+  acceptance of its terms. No sender domain or SMTP credential is configured yet.
 - The live webhook draft selects Snapshot events for `checkout.session.completed`,
   `checkout.session.async_payment_succeeded`, `charge.refunded`,
   `charge.dispute.created` and `charge.dispute.closed`, targeting the existing
   `perigee-api/stripe-webhook` endpoint. The destination has not been created yet.
 - Custom SMTP is currently off. Configure a real sender before public sign-in;
   the default Supabase sender accepts only organization-team addresses.
-- Before cutover, deploy migration `202610300002_separate_payment_environments.sql`
-  and the matching function, configure the live Stripe secret, live price and
+- Migration `202610300002_separate_payment_environments.sql` and its matching
+  function are deployed; restore was verified against existing sandbox ownership.
+- Before payment cutover, configure the live Stripe secret, live price and
   live webhook signing secret, and update the Supabase Site URL, redirect allow
-  list and `WEB_GAME_URL` to the production game URL.
+  list and `WEB_GAME_URL` to `https://rbgames.dev/play/`. These currently still
+  point to the original GitHub Pages URL. The new allowed redirect is entered in
+  the dashboard's add-URL form but remains unsaved, pending confirmation.
 - Keep live payments disabled until the sender and live credentials are ready.
-  Then enable `PAYMENTS_LIVE=true` and `COMMERCE_ENABLED=true`, make the production
-  frontend public, and verify `/public-config` reports `checkoutReady:true`,
+  Then enable `PAYMENTS_LIVE=true` and `COMMERCE_ENABLED=true`, and verify
+  `/public-config` reports `checkoutReady:true`,
   `paymentsLive:true`, and the EUR 299-cent price. Complete a separate owner-run
   real payment check before advertising the shop.
 
@@ -183,6 +194,11 @@ original cosmetic PNGs. `FrankenShip.png` is a compatibility copy of
 These are export-only compatibility files. Gameplay sprite animations are
 unchanged. Keep them when replacing the export, or restore the matching original
 artwork before the resource-existence test.
+
+The player opens the canonical `game/` URL. The service worker maps directory
+navigations to the cached HTML and normalizes followed-redirect responses before
+returning them to navigations. This supports hosts that redirect `index.html` to
+its directory, including Sites, without breaking iframe or offline launches.
 
 ## Verification and constraints
 

@@ -30,13 +30,20 @@ async function rangeResponse(request, response) {
   headers.set('Content-Length', String(end - start + 1)); headers.set('Accept-Ranges', 'bytes');
   return new Response(buffer.slice(start, end + 1), { status: 206, headers });
 }
+function navigationResponse(response, navigation) {
+  // Static hosts can redirect index.html to its directory. A followed redirect
+  // cannot answer a navigation whose redirect mode is manual (including iframes).
+  return navigation && response.redirected
+    ? new Response(response.body, { status: response.status, statusText: response.statusText, headers: response.headers })
+    : response;
+}
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   const navigation = request.mode === 'navigate';
-  if (navigation && url.pathname === new URL(self.registration.scope).pathname) url.pathname += 'index.html';
+  if (navigation && url.pathname.endsWith('/')) url.pathname += 'index.html';
   url.search = ''; url.hash = '';
   if (!allowed.has(url.href)) return;
   event.respondWith((async () => {
@@ -44,11 +51,11 @@ self.addEventListener('fetch', event => {
     const cached = await cache.match(url.href);
     // Navigations use the versioned cache too, so a running release never mixes
     // its shell and game assets. The browser checks sw.js itself for updates.
-    if (cached) return rangeResponse(request, cached);
+    if (cached) return navigationResponse(await rangeResponse(request, cached), navigation);
     const headers = new Headers(request.headers); headers.delete('range');
     const response = await fetch(new Request(url.href, { headers, cache: 'reload', credentials: 'same-origin' }));
     if (response.ok && response.status === 200) await cache.put(url.href, response.clone());
-    return rangeResponse(request, response);
+    return navigationResponse(await rangeResponse(request, response), navigation);
   })());
 });
 let downloading;

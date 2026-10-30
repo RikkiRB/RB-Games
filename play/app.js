@@ -146,7 +146,7 @@ async function loadShop() {
 function connection() { $('connection-status').textContent = navigator.onLine ? '' : 'Offline · leaderboards unavailable'; }
 function start() {
   $('launch').hidden = true; $('player').hidden = false;
-  if (!$('game-frame').getAttribute('src')) $('game-frame').src = 'game/index.html';
+  if (!$('game-frame').getAttribute('src')) $('game-frame').src = 'game/';
   $('game-frame').focus(); $('player').scrollIntoView({ block: 'start', behavior: 'instant' }); connection();
 }
 $('play-button').addEventListener('click', start);
