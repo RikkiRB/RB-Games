@@ -12,11 +12,11 @@ The original GDevelop project and Android billing events have not been edited.
 - Offline files download only after the player chooses to save them. The current
   release is about 113 MB. Browser storage can be evicted; it is not permanent.
 - Leaderboards and buying/restoring require internet access.
-- **Browser payments are not activated.** The public Supabase URL and publishable
-  key are connected for owner sign-in testing. The page does not unlock for a
-  payment return URL. No live charge has been tested.
-- The Supabase backend and Stripe integration are supplied and tested with
-  simulated providers. They must be deployed and connected to real accounts.
+- **Stripe sandbox payments work. Live payments are not enabled yet.** The owner
+  completed sign-in, a EUR 2.99 test checkout, webhook confirmation and cosmetic
+  unlock on 30 October 2026. A payment return URL never grants ownership itself.
+- The Supabase backend is deployed. Automated provider simulations and the
+  owner's real Stripe sandbox checkout have passed. No live charge has been tested.
 - Existing Google Play purchases need the Android linking helper below in a
   new Android release before players can link them. Signing into Google in a
   browser is insufficient.
@@ -26,8 +26,9 @@ The original GDevelop project and Android billing events have not been edited.
 Use an RB Games-owned Supabase project and Stripe account. Account creation,
 business verification and accepting provider terms are owner actions.
 
-1. Apply `supabase/migrations/202610300001_perigee_purchases.sql` to the Supabase
-   database. The table has RLS enabled, no client write/read permissions, and an
+1. Apply both migrations in `supabase/migrations/` to the Supabase database.
+   The second adds a payment-environment field so sandbox ownership cannot grant
+   access after live payments are enabled. The table has RLS enabled, no client write/read permissions, and an
    atomic receipt-to-account binding that cannot be reassigned by a player.
 2. Enable email authentication and set the site URL and redirect allow list to
    the exact `/play/` URL. The web page uses Supabase's default Magic Link
@@ -90,8 +91,10 @@ business verification and accepting provider terms are owner actions.
    sign-out on an actual iPhone. Then connect the equivalent live Stripe settings
    and retest the complete flow. The automated tests do not replace this step.
 
-GitHub Pages hosts the public frontend only. It cannot keep payment secrets or
-execute this backend. The function and database run in Supabase.
+The function and database run in Supabase. GitHub remains the source repository.
+GitHub Pages excludes e-commerce hosting under its terms, so the purchase-enabled
+production frontend is being moved to Sites. The original public free-play page
+continues to run while production settings are prepared.
 
 ### Test setup on 30 October 2026
 
@@ -105,10 +108,32 @@ execute this backend. The function and database run in Supabase.
   `price_1UWHgV231475JVEeeacUcOqM` on product `prod_VXMPrg3bA1bOUT`.
 - The sandbox Snapshot webhook destination `we_1UWHjK231475JVEeAp0nwdbn`
   sends the five listed events to the deployed `perigee-api/stripe-webhook`.
-- `STRIPE_PRICE_ID` is saved in Supabase. `COMMERCE_ENABLED` and
-  `PAYMENTS_LIVE` are still `false`. The Stripe test secret key and webhook
-  signing secret still need to be saved in Supabase's Edge Function Secrets
-  before enabling the test checkout.
+- The sandbox price, Stripe test secret and webhook signing secret are saved in
+  Supabase. `COMMERCE_ENABLED=true` and `PAYMENTS_LIVE=false`. Test checkout stays
+  behind the owner preview URL.
+
+### Production preparation on 30 October 2026
+
+- Live Stripe account: `acct_1UWEnH0t7N7N9G5J` (RB Games).
+- Live product: `prod_VXSutpEr1bUKej`, PERIGEE PANIC — Full Content Upgrade.
+- Live one-time price: `price_1UWNyf0t7N7N9G5JNFyRmDAH`, EUR 2.99, tax-inclusive.
+- Production frontend is deployed as an owner-private review copy at
+  `https://rb-games.rbgam.chatgpt.site/play/`.
+- The live webhook draft selects Snapshot events for `checkout.session.completed`,
+  `checkout.session.async_payment_succeeded`, `charge.refunded`,
+  `charge.dispute.created` and `charge.dispute.closed`, targeting the existing
+  `perigee-api/stripe-webhook` endpoint. The destination has not been created yet.
+- Custom SMTP is currently off. Configure a real sender before public sign-in;
+  the default Supabase sender accepts only organization-team addresses.
+- Before cutover, deploy migration `202610300002_separate_payment_environments.sql`
+  and the matching function, configure the live Stripe secret, live price and
+  live webhook signing secret, and update the Supabase Site URL, redirect allow
+  list and `WEB_GAME_URL` to the production game URL.
+- Keep live payments disabled until the sender and live credentials are ready.
+  Then enable `PAYMENTS_LIVE=true` and `COMMERCE_ENABLED=true`, make the production
+  frontend public, and verify `/public-config` reports `checkoutReady:true`,
+  `paymentsLive:true`, and the EUR 299-cent price. Complete a separate owner-run
+  real payment check before advertising the shop.
 
 ## Link existing Android purchases
 

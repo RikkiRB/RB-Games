@@ -43,6 +43,7 @@ export async function signLicense(privateJwk, userId, audience, now = Date.now()
 export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
   let googleCredential;
   let priceCache;
+  const paymentsLive = () => env.PAYMENTS_LIVE === 'true';
   const ready = () => !!(env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID && env.STRIPE_WEBHOOK_SECRET && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY && env.WEB_GAME_URL && env.COMMERCE_ENABLED === 'true');
   const allowedOrigin = () => new URL(env.WEB_GAME_URL).origin;
   async function externalJson(url, init = {}, errorStatus = 503) {
@@ -57,11 +58,11 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
   const stripe = (path, options = {}) => externalJson('https://api.stripe.com/v1/' + path, {
     ...options, headers: { Authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, ...(env.STRIPE_API_VERSION ? { 'Stripe-Version': env.STRIPE_API_VERSION } : {}), ...options.headers }
   });
-  const purchasesFor = userId => database('pp_purchases?user_id=eq.' + encodeURIComponent(userId) + '&select=provider,reference,status,provider_token');
-  async function record(provider, reference, userId, status, providerToken = null, eventTime = Math.floor(clock() / 1000)) {
+  const purchasesFor = userId => database('pp_purchases?user_id=eq.' + encodeURIComponent(userId) + '&livemode=eq.' + paymentsLive() + '&select=provider,reference,status,provider_token,livemode');
+  async function record(provider, reference, userId, status, providerToken = null, eventTime = Math.floor(clock() / 1000), livemode = paymentsLive()) {
     const response = await fetcher(env.SUPABASE_URL + '/rest/v1/rpc/pp_record_purchase', {
       method: 'POST', headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_provider: provider, p_reference: reference, p_user_id: userId, p_status: status, p_token: providerToken, p_event_time: eventTime }), signal: AbortSignal.timeout(15000)
+      body: JSON.stringify({ p_provider: provider, p_reference: reference, p_user_id: userId, p_status: status, p_token: providerToken, p_event_time: eventTime, p_livemode: livemode }), signal: AbortSignal.timeout(15000)
     });
     ensure(response.status !== 409, 409, 'This purchase is already linked to another account.');
     ensure(response.ok, 503, 'Purchase could not be saved. Please try again.');
@@ -79,7 +80,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
   async function getPrice() {
     if (priceCache && priceCache.until > clock()) return priceCache.value;
     const price = await stripe('prices/' + encodeURIComponent(env.STRIPE_PRICE_ID));
-    ensure(price.active === true && price.type === 'one_time' && price.currency === 'eur' && price.unit_amount === 299, 503, 'The cosmetic pack price needs to be configured.');
+    ensure(price.active === true && price.type === 'one_time' && price.currency === 'eur' && price.unit_amount === 299 && price.livemode === paymentsLive(), 503, 'The cosmetic pack price needs to be configured for this payment environment.');
     priceCache = { until: clock() + 60000, value: { amount: price.unit_amount, currency: price.currency } };
     return priceCache.value;
   }
@@ -105,7 +106,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
     const response = await fetcher(base + '/purchases/productsv2/tokens/' + encodeURIComponent(purchaseToken), { headers: { Authorization: 'Bearer ' + accessToken }, signal: AbortSignal.timeout(15000) });
     ensure(response.ok, response.status === 404 || response.status === 410 ? 409 : 503, 'Google Play could not verify this purchase.');
     const purchase = await response.json();
-    playPurchaseState(purchase, await accountHash(userId), env.ALLOW_LEGACY_PLAY_LINKING === 'true', env.ALLOW_TEST_PURCHASES === 'true');
+    playPurchaseState(purchase, await accountHash(userId), env.ALLOW_LEGACY_PLAY_LINKING === 'true', env.ALLOW_TEST_PURCHASES === 'true' && !paymentsLive());
     if (acknowledge && purchase.acknowledgementState === 'ACKNOWLEDGEMENT_STATE_PENDING') {
       await externalJson(base + '/purchases/products/' + PRODUCT + '/tokens/' + encodeURIComponent(purchaseToken) + ':acknowledge', { method: 'POST', headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' }, body: '{}' });
     }
@@ -135,7 +136,8 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
       customer_email: user.email, 'metadata[account_id]': user.id, 'metadata[product_id]': PRODUCT,
       'payment_intent_data[metadata][account_id]': user.id, 'payment_intent_data[metadata][product_id]': PRODUCT,
       success_url: env.WEB_GAME_URL + '?checkout=complete', cancel_url: env.WEB_GAME_URL + '?checkout=cancelled' });
-    const result = await stripe('checkout/sessions', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': 'perigee-' + user.id + '-' + Math.floor(clock() / 600000) }, body: data });
+    const result = await stripe('checkout/sessions', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': 'perigee-' + (paymentsLive() ? 'live-' : 'test-') + env.STRIPE_PRICE_ID + '-' + user.id + '-' + Math.floor(clock() / 600000) }, body: data });
+    ensure(result.livemode === paymentsLive(), 503, 'Checkout is configured for the wrong payment environment.');
     ensure(result.url?.startsWith('https://checkout.stripe.com/'), 503, 'Checkout could not be opened.');
     return { url: result.url };
   }
@@ -146,13 +148,14 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
     const raw = await request.text();
     ensure(await verifyStripeSignature(raw, request.headers.get('stripe-signature'), env.STRIPE_WEBHOOK_SECRET, clock()), 400, 'Invalid payment signature.');
     let event; try { event = JSON.parse(raw); } catch { throw new HttpError(400, 'Invalid payment event.'); }
-    ensure(!!event.livemode === (env.PAYMENTS_LIVE === 'true'), 400, 'Wrong payment environment.');
+    ensure(event.livemode === paymentsLive(), 400, 'Wrong payment environment.');
     if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) {
       const id = event.data?.object?.id;
       ensure(typeof id === 'string' && /^cs_[a-zA-Z0-9_]+$/.test(id), 400, 'Invalid checkout event.');
       // Retrieve authoritative current state, including refund/dispute state.
       // Late/duplicate events cannot reactivate a refunded payment.
       const session = await stripe('checkout/sessions/' + encodeURIComponent(id) + '?expand[]=line_items&expand[]=payment_intent.latest_charge');
+      ensure(session.livemode === paymentsLive(), 400, 'Wrong payment environment.');
       if (session.payment_status !== 'paid') return { received: true, pending: true };
       const owner = session.client_reference_id;
       const lines = session.line_items?.data || [];
@@ -170,7 +173,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
       const charge = await stripe('charges/' + encodeURIComponent(chargeId));
       const intentId = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
       ensure(typeof intentId === 'string' && /^pi_[a-zA-Z0-9]+$/.test(intentId), 400, 'Invalid payment reference.');
-      const rows = await database('pp_purchases?provider=eq.stripe&reference=eq.' + encodeURIComponent(intentId) + '&select=user_id');
+      const rows = await database('pp_purchases?provider=eq.stripe&reference=eq.' + encodeURIComponent(intentId) + '&livemode=eq.' + paymentsLive() + '&select=user_id');
       // Disputes stay suspended until support review. Partial refunds preserve
       // access; full refunds revoke it. Another valid purchase still grants it.
       if (charge.refunded || charge.disputed || charge.amount_refunded >= charge.amount) {
@@ -191,7 +194,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
       let result;
       if (request.method === 'GET' && path === '/public-config') {
         let price = null; if (ready()) { try { price = await getPrice(); } catch { /* Unavailable price keeps checkout disabled. */ } }
-        result = { checkoutReady: ready() && !!price, paymentsLive: env.PAYMENTS_LIVE === 'true', price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON };
+        result = { checkoutReady: ready() && !!price, paymentsLive: paymentsLive(), price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON };
       } else if (request.method === 'POST' && path === '/stripe-webhook') result = await processWebhook(request);
       else if (request.method === 'GET' && path === '/me') result = await me(await authenticate(request));
       else if (request.method === 'POST' && path === '/checkout') result = await createCheckout(await authenticate(request));
@@ -201,9 +204,9 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
         const raw = await request.text(); ensure(raw.length <= 16384, 413, 'Request too large.');
         let data; try { data = JSON.parse(raw); } catch { throw new HttpError(400, 'Invalid purchase request.'); }
         ensure(typeof data.purchaseToken === 'string' && data.purchaseToken.length >= 16 && data.purchaseToken.length <= 8192 && !/\s/.test(data.purchaseToken), 400, 'A valid purchase token is required.');
-        await verifyPlay(data.purchaseToken, user.id, true);
+        const purchase = await verifyPlay(data.purchaseToken, user.id, true);
         const reference = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encode(data.purchaseToken))));
-        await record('google_play', reference, user.id, 'active', data.purchaseToken);
+        await record('google_play', reference, user.id, 'active', data.purchaseToken, Math.floor(clock() / 1000), !purchase.testPurchaseContext);
         result = await me(user);
       } else throw new HttpError(404, 'Not found.');
       return new Response(JSON.stringify(result), { headers: responseHeaders });
