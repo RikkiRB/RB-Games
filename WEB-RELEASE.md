@@ -12,9 +12,9 @@ The original GDevelop project and Android billing events have not been edited.
 - Offline files download only after the player chooses to save them. The current
   release is about 113 MB. Browser storage can be evicted; it is not permanent.
 - Leaderboards and buying/restoring require internet access.
-- **Accounts and browser payments are not activated.** `play/config.js` is empty
-  intentionally. The page does not offer a fake checkout or unlock for a payment
-  return URL. No live charge has been tested.
+- **Browser payments are not activated.** The public Supabase URL and publishable
+  key are connected for owner sign-in testing. The page does not unlock for a
+  payment return URL. No live charge has been tested.
 - The Supabase backend and Stripe integration are supplied and tested with
   simulated providers. They must be deployed and connected to real accounts.
 - Existing Google Play purchases need the Android linking helper below in a
@@ -29,9 +29,13 @@ business verification and accepting provider terms are owner actions.
 1. Apply `supabase/migrations/202610300001_perigee_purchases.sql` to the Supabase
    database. The table has RLS enabled, no client write/read permissions, and an
    atomic receipt-to-account binding that cannot be reassigned by a player.
-2. Enable email authentication. Set the Magic Link/OTP email template to include
-   `{{ .Token }}` so players receive the code used by this UI. Configure a verified
-   sender/SMTP for production; the default development email delivery is limited.
+2. Enable email authentication and set the site URL and redirect allow list to
+   the exact `/play/` URL. The web page uses Supabase's default Magic Link
+   template and reads the session from the URL fragment after the player opens
+   the link. Set up custom SMTP before public sign-in: Supabase's default sender
+   can only email members of the Supabase organization. The separate Android
+   linking helper uses a code and will need a template containing `{{ .Token }}`
+   when that native feature is released.
 3. Create a **one-time EUR 2.99** Stripe price for the cosmetic Full Content
    Upgrade. Start in test mode. The backend rejects any different price, product,
    quantity, payment status or live/test mode. This pack has no gameplay effects.
@@ -71,7 +75,7 @@ business verification and accepting provider terms are owner actions.
    `charge.refunded`, `charge.dispute.created`, `charge.dispute.closed`.
    Full refunds revoke access. Partial refunds preserve it. Disputes suspend
    access pending support review. Duplicate and out-of-order events are safe.
-7. Put only the public Supabase URL, public anon key, matching function URL and
+7. Put only the public Supabase URL, public publishable (or legacy anon) key, matching function URL and
    optional ES256 **public** JWK into `play/config.js`. The CSP intentionally
    permits only your own files and Supabase HTTPS APIs. Run `npm run build:web`
    after changing public configuration so the offline cache version changes.
@@ -88,6 +92,21 @@ business verification and accepting provider terms are owner actions.
 
 GitHub Pages hosts the public frontend only. It cannot keep payment secrets or
 execute this backend. The function and database run in Supabase.
+
+### Test setup on 30 October 2026
+
+- Supabase Auth email sign-in is enabled. The site URL and one exact redirect
+  URL point to `https://rikkirb.github.io/RB-Games/play/`. While commerce is
+  disabled, open `/play/?accounts_preview=1` to show the sign-in controls for
+  owner testing; normal visitors keep the existing free-play page.
+- The RB Games Stripe sandbox has a one-off €2.99 price
+  `price_1UWHgV231475JVEeeacUcOqM` on product `prod_VXMPrg3bA1bOUT`.
+- The sandbox Snapshot webhook destination `we_1UWHjK231475JVEeAp0nwdbn`
+  sends the five listed events to the deployed `perigee-api/stripe-webhook`.
+- `STRIPE_PRICE_ID` is saved in Supabase. `COMMERCE_ENABLED` and
+  `PAYMENTS_LIVE` are still `false`. The Stripe test secret key and webhook
+  signing secret still need to be saved in Supabase's Edge Function Secrets
+  before enabling the test checkout.
 
 ## Link existing Android purchases
 

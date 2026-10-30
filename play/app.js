@@ -1,12 +1,17 @@
 import { verifyLicense } from './license.js';
+import { readAuthRedirect } from './auth-return.js';
 
 const config = window.PERIGEE_WEB_CONFIG || {};
+const authRedirect = readAuthRedirect(location.hash);
+// Remove credentials from the address bar before making any network requests.
+if (authRedirect) history.replaceState(null, '', location.pathname + location.search);
 const $ = id => document.getElementById(id);
 const SESSION_KEY = 'rb.perigee.session.v1';
 const LICENSE_KEY = 'rb.perigee.license.v1';
 const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(config.supabaseUrl || '') &&
   typeof config.supabaseAnonKey === 'string' && config.supabaseAnonKey.length > 20 &&
   config.apiUrl === config.supabaseUrl.replace(/\/$/, '') + '/functions/v1/perigee-api';
+const accountsPreview = new URLSearchParams(location.search).has('accounts_preview');
 const audience = new URL('./', location.href).href;
 let session = read(SESSION_KEY);
 let state = { owned: false, ready: false, price: '', verification: 'unverified' };
@@ -22,15 +27,16 @@ function sendState() {
 function renderAccount() {
   const signedIn = !!session?.user?.id;
   $('email-form').hidden = signedIn || !!pendingEmail;
-  $('code-form').hidden = signedIn || !pendingEmail;
+  $('link-pending').hidden = signedIn || !pendingEmail;
   $('signed-in').hidden = !signedIn;
   $('account-email').textContent = session?.user?.email || '';
   $('ownership-status').textContent = state.owned ? 'Full Content Upgrade owned. Your cosmetic pack is unlocked.' : 'Your cosmetic pack is not unlocked on this account.';
   $('buy-button').disabled = !state.ready || state.owned || checkoutBusy;
   $('buy-button').textContent = state.owned ? 'Already owned' : state.price ? 'Unlock cosmetic pack · ' + state.price : 'Purchases unavailable';
   $('pack-status').textContent = state.owned ? 'Your cosmetic pack is unlocked in the Hangar.' : state.ready ? 'Optional cosmetic pack. Sign in to buy or restore your purchase.' : 'Browser add-on purchases are not available yet. The free game is ready to play.';
-  $('account-button').hidden = !configured;
-  $('pack-button').hidden = !configured;
+  const showAccounts = configured && (state.ready || accountsPreview || signedIn || !!authRedirect);
+  $('account-button').hidden = !showAccounts;
+  $('pack-button').hidden = !showAccounts;
 }
 async function requestJson(url, options = {}) {
   const response = await fetch(url, { ...options, cache: 'no-store', signal: AbortSignal.timeout(20000) });
@@ -42,6 +48,24 @@ async function auth(path, body) {
   return requestJson(config.supabaseUrl.replace(/\/$/, '') + '/auth/v1/' + path, {
     method: 'POST', headers: { apikey: config.supabaseAnonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
+}
+async function finishMagicLink() {
+  if (!authRedirect) return;
+  openAccount();
+  if (authRedirect.error) { status('That sign-in link has expired or failed. Please request a new one.'); return; }
+  try {
+    const user = await requestJson(config.supabaseUrl.replace(/\/$/, '') + '/auth/v1/user', {
+      headers: { apikey: config.supabaseAnonKey, Authorization: 'Bearer ' + authRedirect.access_token }
+    });
+    if (!user?.id || !user.email || !user.email_confirmed_at) throw new Error('Email not verified.');
+    session = { ...authRedirect, user };
+    save(SESSION_KEY, session);
+    pendingEmail = '';
+    renderAccount();
+    await restore();
+  } catch {
+    status('The sign-in link could not be verified. Please request a new one.');
+  }
 }
 async function token() {
   if (!session?.access_token) throw new Error('Sign in to continue.');
@@ -125,18 +149,9 @@ for (const id of ['account-button', 'pack-button']) $(id).addEventListener('clic
 $('close-account').addEventListener('click', () => $('account-dialog').close());
 $('change-email').addEventListener('click', () => { pendingEmail = ''; renderAccount(); $('email').focus(); });
 $('email-form').addEventListener('submit', async event => {
-  event.preventDefault(); const button = event.submitter; button.disabled = true; status('Sending your sign-in code…');
-  try { const email = $('email').value.trim(); await auth('otp', { email, create_user: true }); pendingEmail = email; renderAccount(); status('Check your email for the verification code.'); $('code').focus(); }
+  event.preventDefault(); const button = event.submitter; button.disabled = true; status('Sending your sign-in link…');
+  try { const email = $('email').value.trim(); await auth('otp', { email, create_user: true }); pendingEmail = email; renderAccount(); status('Open the sign-in link from your email on this device.'); }
   catch (error) { status(error.message); } finally { button.disabled = false; }
-});
-$('code-form').addEventListener('submit', async event => {
-  event.preventDefault(); const button = event.submitter; button.disabled = true; status('Verifying your code…');
-  try {
-    const result = await auth('verify', { email: pendingEmail, token: $('code').value.trim(), type: 'email' });
-    if (!result.access_token || !result.user?.id) throw new Error('Sign-in could not be verified.');
-    session = { ...result, expires_at: result.expires_at || Math.floor(Date.now() / 1000) + result.expires_in };
-    save(SESSION_KEY, session); pendingEmail = ''; $('code').value = ''; renderAccount(); await restore();
-  } catch (error) { status(error.message); } finally { button.disabled = false; }
 });
 $('buy-button').addEventListener('click', buy);
 $('restore-button').addEventListener('click', restore);
@@ -194,7 +209,8 @@ setInterval(() => { if (state.verification === 'signed-offline' && state.expires
 setInterval(() => { if (session && navigator.onLine && document.visibilityState === 'visible') restore(); }, 180000);
 await loadOfflineOwnership();
 await loadShop();
-if (session && navigator.onLine) await restore();
+await finishMagicLink();
+if (session && navigator.onLine && !authRedirect) await restore();
 if (new URLSearchParams(location.search).has('checkout')) {
   openAccount(); status('Checking payment status. Your pack unlocks after the payment service confirms it.');
   if (session) for (const delay of [0, 2000, 6000]) { if (delay) await new Promise(resolve => setTimeout(resolve, delay)); await restore(); if (state.owned) break; }

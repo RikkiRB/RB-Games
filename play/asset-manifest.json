@@ -1,6 +1,6 @@
 {
-  "version": "58d1dabddda81492",
-  "totalBytes": 118210478,
+  "version": "c9049b8aed1b0919",
+  "totalBytes": 118211933,
   "assets": [
     "../assets/earth.png",
     "../assets/rb-games-horizontal.svg",
@@ -8,6 +8,7 @@
     "../styles.css",
     "app.css",
     "app.js",
+    "auth-return.js",
     "config.js",
     "game-bridge.js",
     "game/00_Orangeexplosion.png",
