@@ -98,7 +98,7 @@ GitHub Pages excludes e-commerce hosting under its terms, so the purchase-enable
 production frontend is hosted on Sites at `rbgames.dev`. The original public
 free-play page continues to run while production payment settings are prepared.
 
-### Test setup on 30 October 2026
+### Sandbox test completed on 30 October 2026 (historical settings)
 
 - Supabase Auth email sign-in is enabled. The site URL and one exact redirect
   URL point to `https://rikkirb.github.io/RB-Games/play/`. While commerce is
@@ -125,21 +125,30 @@ free-play page continues to run while production payment settings are prepared.
 - Cloudflare Email Routing was enabled by the owner; its MX, SPF and DKIM records
   are preserved. Routing receives/forwards mail and does not supply Supabase SMTP.
 - Cloudflare Email Sending requires Workers Paid. No paid plan was purchased.
-  Resend's free SMTP plan is the prepared alternative, pending owner sign-in and
-  acceptance of its terms. No sender domain or SMTP credential is configured yet.
-- The live webhook draft selects Snapshot events for `checkout.session.completed`,
+  The owner signed up for Resend. Sender domain `auth.rbgames.dev` is verified
+  in eu-west-1; its DKIM TXT and two Forge CNAME records are saved in Cloudflare.
+  Existing Email Routing records were preserved.
+- Live Snapshot webhook `we_1UWP1j0t7N7N9G5J6tMLzLk7` is active, named
+  `PERIGEE PANIC — live purchases`, with API version `2026-09-30.endive`.
+  It sends `checkout.session.completed`,
   `checkout.session.async_payment_succeeded`, `charge.refunded`,
-  `charge.dispute.created` and `charge.dispute.closed`, targeting the existing
-  `perigee-api/stripe-webhook` endpoint. The destination has not been created yet.
-- Custom SMTP is currently off. Configure a real sender before public sign-in;
-  the default Supabase sender accepts only organization-team addresses.
+  `charge.dispute.created` and `charge.dispute.closed` to
+  `https://yjzrfmptbgrrthdevgwj.supabase.co/functions/v1/perigee-api/stripe-webhook`.
+- Supabase Site URL is saved as `https://rbgames.dev/play/`; that exact URL is
+  also allowed for redirects. The original GitHub Pages redirect remains allowed.
+- `WEB_GAME_URL=https://rbgames.dev/play/` and the live `STRIPE_PRICE_ID` above
+  are saved. `COMMERCE_ENABLED=false` and `PAYMENTS_LIVE=false`; public config
+  was checked and reports `checkoutReady:false` and `paymentsLive:false`.
+- SMTP form is prepared but UNSAVED: sender `noreply@auth.rbgames.dev`, name
+  `RB Games`, host `smtp.resend.com`, port `465`, username `resend`.
+  A Resend sending-access key named `RB Games Supabase sign-in` was created
+  with all-domain scope. The owner must copy it from the one-time key dialog
+  into Supabase SMTP Password and save. No key is stored in this repository.
+- The owner must replace Supabase `STRIPE_SECRET_KEY` and
+  `STRIPE_WEBHOOK_SECRET` with the live account key and the new live webhook's
+  signing secret. Those two secrets still contain their sandbox values.
 - Migration `202610300002_separate_payment_environments.sql` and its matching
   function are deployed; restore was verified against existing sandbox ownership.
-- Before payment cutover, configure the live Stripe secret, live price and
-  live webhook signing secret, and update the Supabase Site URL, redirect allow
-  list and `WEB_GAME_URL` to `https://rbgames.dev/play/`. These currently still
-  point to the original GitHub Pages URL. The new allowed redirect is entered in
-  the dashboard's add-URL form but remains unsaved, pending confirmation.
 - Keep live payments disabled until the sender and live credentials are ready.
   Then enable `PAYMENTS_LIVE=true` and `COMMERCE_ENABLED=true`, and verify
   `/public-config` reports `checkoutReady:true`,
