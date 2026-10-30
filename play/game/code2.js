@@ -598,7 +598,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDSettingsTitleObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDSettingsTitleObjects1[i].setY(204 - (gdjs.SettingsCode.GDSettingsTitleObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDSettingsTitleObjects1[i].setY(204);
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDMusicLabelObjects1.length ;i < len;++i) {
@@ -606,7 +606,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDMusicLabelObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDMusicLabelObjects1[i].setY(294 - (gdjs.SettingsCode.GDMusicLabelObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDMusicLabelObjects1[i].setY(294);
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDSoundLabelObjects1.length ;i < len;++i) {
@@ -614,7 +614,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDSoundLabelObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDSoundLabelObjects1[i].setY(384 - (gdjs.SettingsCode.GDSoundLabelObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDSoundLabelObjects1[i].setY(384);
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDBackButtonObjects1.length ;i < len;++i) {
@@ -622,7 +622,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDBackButtonObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDBackButtonObjects1[i].setY((( gdjs.SettingsCode.GDBackBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDBackBGObjects1[0].getCenterYInScene()) - (gdjs.SettingsCode.GDBackButtonObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDBackButtonObjects1[i].setY((( gdjs.SettingsCode.GDBackBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDBackBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDControlTextObjects1.length ;i < len;++i) {
@@ -630,7 +630,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDControlTextObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDControlTextObjects1[i].setY(624 - (gdjs.SettingsCode.GDControlTextObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDControlTextObjects1[i].setY(624);
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDMusicButtonObjects1.length ;i < len;++i) {
@@ -638,7 +638,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDMusicButtonObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDMusicButtonObjects1[i].setY((( gdjs.SettingsCode.GDMusicToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDMusicToggleBGObjects1[0].getCenterYInScene()) - (gdjs.SettingsCode.GDMusicButtonObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDMusicButtonObjects1[i].setY((( gdjs.SettingsCode.GDMusicToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDMusicToggleBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDSFXButtonObjects1.length ;i < len;++i) {
@@ -646,7 +646,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDSFXButtonObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDSFXButtonObjects1[i].setY((( gdjs.SettingsCode.GDSoundToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDSoundToggleBGObjects1[0].getCenterYInScene()) - (gdjs.SettingsCode.GDSFXButtonObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDSFXButtonObjects1[i].setY((( gdjs.SettingsCode.GDSoundToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDSoundToggleBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDControlsButtonObjects1.length ;i < len;++i) {
@@ -654,33 +654,7 @@ gdjs.copyArray(runtimeScene.getObjects("SoundToggleBG"), gdjs.SettingsCode.GDSou
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDControlsButtonObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDControlsButtonObjects1[i].setY((( gdjs.SettingsCode.GDControlsToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDControlsToggleBGObjects1[0].getCenterYInScene()) - (gdjs.SettingsCode.GDControlsButtonObjects1[i].getHeight()) / 2);
-}
-}
-}
-
-}
-
-
-{
-
-gdjs.copyArray(runtimeScene.getObjects("BackBG"), gdjs.SettingsCode.GDBackBGObjects1);
-
-let isConditionTrue_0 = false;
-isConditionTrue_0 = false;
-for (var i = 0, k = 0, l = gdjs.SettingsCode.GDBackBGObjects1.length;i<l;++i) {
-    if ( !(gdjs.SettingsCode.GDBackBGObjects1[i].getBehavior("ButtonFSM").IsPressed(null)) ) {
-        isConditionTrue_0 = true;
-        gdjs.SettingsCode.GDBackBGObjects1[k] = gdjs.SettingsCode.GDBackBGObjects1[i];
-        ++k;
-    }
-}
-gdjs.SettingsCode.GDBackBGObjects1.length = k;
-if (isConditionTrue_0) {
-/* Reuse gdjs.SettingsCode.GDBackBGObjects1 */
-gdjs.copyArray(runtimeScene.getObjects("BackButton"), gdjs.SettingsCode.GDBackButtonObjects1);
-{for(var i = 0, len = gdjs.SettingsCode.GDBackButtonObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDBackButtonObjects1[i].setY((( gdjs.SettingsCode.GDBackBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDBackBGObjects1[0].getCenterYInScene()) - (gdjs.SettingsCode.GDBackButtonObjects1[i].getHeight()) / 2 + 8);
+    gdjs.SettingsCode.GDControlsButtonObjects1[i].setY((( gdjs.SettingsCode.GDControlsToggleBGObjects1.length === 0 ) ? 0 :gdjs.SettingsCode.GDControlsToggleBGObjects1[0].getCenterYInScene()));
 }
 }
 }
@@ -941,7 +915,7 @@ gdjs.copyArray(runtimeScene.getObjects("ControlsLabel"), gdjs.SettingsCode.GDCon
 }
 }
 {for(var i = 0, len = gdjs.SettingsCode.GDControlsLabelObjects1.length ;i < len;++i) {
-    gdjs.SettingsCode.GDControlsLabelObjects1[i].setY(474 - (gdjs.SettingsCode.GDControlsLabelObjects1[i].getHeight()) / 2);
+    gdjs.SettingsCode.GDControlsLabelObjects1[i].setY(474);
 }
 }
 }

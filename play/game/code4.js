@@ -7556,7 +7556,7 @@ gdjs.copyArray(runtimeScene.getObjects("ReturnToTitleText"), gdjs.GameCode.GDRet
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDPausedTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDPausedTextObjects1[i].setY(204 - (gdjs.GameCode.GDPausedTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDPausedTextObjects1[i].setY(204);
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDResumeButtonObjects1.length ;i < len;++i) {
@@ -7564,7 +7564,7 @@ gdjs.copyArray(runtimeScene.getObjects("ReturnToTitleText"), gdjs.GameCode.GDRet
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDResumeButtonObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDResumeButtonObjects1[i].setY((( gdjs.GameCode.GDOrangeButtonBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDOrangeButtonBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDResumeButtonObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDResumeButtonObjects1[i].setY((( gdjs.GameCode.GDOrangeButtonBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDOrangeButtonBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDPauseSettingsButtonObjects1.length ;i < len;++i) {
@@ -7572,7 +7572,7 @@ gdjs.copyArray(runtimeScene.getObjects("ReturnToTitleText"), gdjs.GameCode.GDRet
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDPauseSettingsButtonObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDPauseSettingsButtonObjects1[i].setY((( gdjs.GameCode.GDBlueButtonBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDBlueButtonBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDPauseSettingsButtonObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDPauseSettingsButtonObjects1[i].setY((( gdjs.GameCode.GDBlueButtonBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDBlueButtonBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDReturnToTitleTextObjects1.length ;i < len;++i) {
@@ -7580,7 +7580,7 @@ gdjs.copyArray(runtimeScene.getObjects("ReturnToTitleText"), gdjs.GameCode.GDRet
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDReturnToTitleTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDReturnToTitleTextObjects1[i].setY((( gdjs.GameCode.GDMainMenuBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDMainMenuBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDReturnToTitleTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDReturnToTitleTextObjects1[i].setY((( gdjs.GameCode.GDMainMenuBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDMainMenuBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDPauseAddonsTextObjects1.length ;i < len;++i) {
@@ -7588,7 +7588,7 @@ gdjs.copyArray(runtimeScene.getObjects("ReturnToTitleText"), gdjs.GameCode.GDRet
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDPauseAddonsTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDPauseAddonsTextObjects1[i].setY((( gdjs.GameCode.GDPauseAddonsBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDPauseAddonsBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDPauseAddonsTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDPauseAddonsTextObjects1[i].setY((( gdjs.GameCode.GDPauseAddonsBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDPauseAddonsBGObjects1[0].getCenterYInScene()));
 }
 }
 }
@@ -7916,7 +7916,7 @@ gdjs.copyArray(runtimeScene.getObjects("ConfirmYesText"), gdjs.GameCode.GDConfir
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDConfirmTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDConfirmTextObjects1[i].setY(300 - (gdjs.GameCode.GDConfirmTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDConfirmTextObjects1[i].setY(300);
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDConfirmYesTextObjects1.length ;i < len;++i) {
@@ -7924,7 +7924,7 @@ gdjs.copyArray(runtimeScene.getObjects("ConfirmYesText"), gdjs.GameCode.GDConfir
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDConfirmYesTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDConfirmYesTextObjects1[i].setY((( gdjs.GameCode.GDConfirmYesBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDConfirmYesBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDConfirmYesTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDConfirmYesTextObjects1[i].setY((( gdjs.GameCode.GDConfirmYesBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDConfirmYesBGObjects1[0].getCenterYInScene()));
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDConfirmNoTextObjects1.length ;i < len;++i) {
@@ -7932,7 +7932,7 @@ gdjs.copyArray(runtimeScene.getObjects("ConfirmYesText"), gdjs.GameCode.GDConfir
 }
 }
 {for(var i = 0, len = gdjs.GameCode.GDConfirmNoTextObjects1.length ;i < len;++i) {
-    gdjs.GameCode.GDConfirmNoTextObjects1[i].setY((( gdjs.GameCode.GDConfirmNoBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDConfirmNoBGObjects1[0].getCenterYInScene()) - (gdjs.GameCode.GDConfirmNoTextObjects1[i].getHeight()) / 2);
+    gdjs.GameCode.GDConfirmNoTextObjects1[i].setY((( gdjs.GameCode.GDConfirmNoBGObjects1.length === 0 ) ? 0 :gdjs.GameCode.GDConfirmNoBGObjects1[0].getCenterYInScene()));
 }
 }
 }

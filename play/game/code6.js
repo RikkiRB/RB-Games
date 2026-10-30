@@ -120,56 +120,11 @@ for (var i = 0, k = 0, l = gdjs.CreditsCode.GDEXITObjects1.length;i<l;++i) {
 gdjs.CreditsCode.GDEXITObjects1.length = k;
 if (isConditionTrue_0) {
 isConditionTrue_0 = false;
-{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(34122244);
+{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(16731404);
 }
 }
 if (isConditionTrue_0) {
-/* Reuse gdjs.CreditsCode.GDEXITObjects1 */
-gdjs.copyArray(runtimeScene.getObjects("buttonBG2"), gdjs.CreditsCode.GDbuttonBG2Objects1);
 {gdjs.evtTools.sound.playSound(runtimeScene, "Bleep_07.aac", false, 12 * runtimeScene.getGame().getVariables().getFromIndex(16).getAsNumber(), 1);
-}
-{for(var i = 0, len = gdjs.CreditsCode.GDEXITObjects1.length ;i < len;++i) {
-    gdjs.CreditsCode.GDEXITObjects1[i].setY(gdjs.CreditsCode.GDEXITObjects1[i].getY() - (4));
-}
-}
-{for(var i = 0, len = gdjs.CreditsCode.GDbuttonBG2Objects1.length ;i < len;++i) {
-    gdjs.CreditsCode.GDbuttonBG2Objects1[i].setY(gdjs.CreditsCode.GDbuttonBG2Objects1[i].getY() - (4));
-}
-}
-}
-
-}
-
-
-{
-
-gdjs.copyArray(runtimeScene.getObjects("EXIT"), gdjs.CreditsCode.GDEXITObjects1);
-
-let isConditionTrue_0 = false;
-isConditionTrue_0 = false;
-for (var i = 0, k = 0, l = gdjs.CreditsCode.GDEXITObjects1.length;i<l;++i) {
-    if ( !(gdjs.CreditsCode.GDEXITObjects1[i].getBehavior("ButtonFSM").IsHovered(null)) ) {
-        isConditionTrue_0 = true;
-        gdjs.CreditsCode.GDEXITObjects1[k] = gdjs.CreditsCode.GDEXITObjects1[i];
-        ++k;
-    }
-}
-gdjs.CreditsCode.GDEXITObjects1.length = k;
-if (isConditionTrue_0) {
-isConditionTrue_0 = false;
-{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(34123780);
-}
-}
-if (isConditionTrue_0) {
-/* Reuse gdjs.CreditsCode.GDEXITObjects1 */
-gdjs.copyArray(runtimeScene.getObjects("buttonBG2"), gdjs.CreditsCode.GDbuttonBG2Objects1);
-{for(var i = 0, len = gdjs.CreditsCode.GDEXITObjects1.length ;i < len;++i) {
-    gdjs.CreditsCode.GDEXITObjects1[i].setY(gdjs.CreditsCode.GDEXITObjects1[i].getY() + (4));
-}
-}
-{for(var i = 0, len = gdjs.CreditsCode.GDbuttonBG2Objects1.length ;i < len;++i) {
-    gdjs.CreditsCode.GDbuttonBG2Objects1[i].setY(gdjs.CreditsCode.GDbuttonBG2Objects1[i].getY() + (4));
-}
 }
 }
 

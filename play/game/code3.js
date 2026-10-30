@@ -123,56 +123,11 @@ for (var i = 0, k = 0, l = gdjs.EnterNameCode.GDContinueButtonObjects1.length;i<
 gdjs.EnterNameCode.GDContinueButtonObjects1.length = k;
 if (isConditionTrue_0) {
 isConditionTrue_0 = false;
-{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(33145516);
+{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(15570060);
 }
 }
 if (isConditionTrue_0) {
-/* Reuse gdjs.EnterNameCode.GDContinueButtonObjects1 */
-gdjs.copyArray(runtimeScene.getObjects("buttonBG"), gdjs.EnterNameCode.GDbuttonBGObjects1);
 {gdjs.evtTools.sound.playSound(runtimeScene, "Bleep_07.aac", false, 12 * runtimeScene.getGame().getVariables().getFromIndex(16).getAsNumber(), 1);
-}
-{for(var i = 0, len = gdjs.EnterNameCode.GDContinueButtonObjects1.length ;i < len;++i) {
-    gdjs.EnterNameCode.GDContinueButtonObjects1[i].setY(gdjs.EnterNameCode.GDContinueButtonObjects1[i].getY() - (4));
-}
-}
-{for(var i = 0, len = gdjs.EnterNameCode.GDbuttonBGObjects1.length ;i < len;++i) {
-    gdjs.EnterNameCode.GDbuttonBGObjects1[i].setY(gdjs.EnterNameCode.GDbuttonBGObjects1[i].getY() - (4));
-}
-}
-}
-
-}
-
-
-{
-
-gdjs.copyArray(runtimeScene.getObjects("ContinueButton"), gdjs.EnterNameCode.GDContinueButtonObjects1);
-
-let isConditionTrue_0 = false;
-isConditionTrue_0 = false;
-for (var i = 0, k = 0, l = gdjs.EnterNameCode.GDContinueButtonObjects1.length;i<l;++i) {
-    if ( !(gdjs.EnterNameCode.GDContinueButtonObjects1[i].getBehavior("ButtonFSM").IsHovered(null)) ) {
-        isConditionTrue_0 = true;
-        gdjs.EnterNameCode.GDContinueButtonObjects1[k] = gdjs.EnterNameCode.GDContinueButtonObjects1[i];
-        ++k;
-    }
-}
-gdjs.EnterNameCode.GDContinueButtonObjects1.length = k;
-if (isConditionTrue_0) {
-isConditionTrue_0 = false;
-{isConditionTrue_0 = runtimeScene.getOnceTriggers().triggerOnce(33147028);
-}
-}
-if (isConditionTrue_0) {
-/* Reuse gdjs.EnterNameCode.GDContinueButtonObjects1 */
-gdjs.copyArray(runtimeScene.getObjects("buttonBG"), gdjs.EnterNameCode.GDbuttonBGObjects1);
-{for(var i = 0, len = gdjs.EnterNameCode.GDContinueButtonObjects1.length ;i < len;++i) {
-    gdjs.EnterNameCode.GDContinueButtonObjects1[i].setY(gdjs.EnterNameCode.GDContinueButtonObjects1[i].getY() + (4));
-}
-}
-{for(var i = 0, len = gdjs.EnterNameCode.GDbuttonBGObjects1.length ;i < len;++i) {
-    gdjs.EnterNameCode.GDbuttonBGObjects1[i].setY(gdjs.EnterNameCode.GDbuttonBGObjects1[i].getY() + (4));
-}
 }
 }
 
