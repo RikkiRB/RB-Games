@@ -1,0 +1,10 @@
+{
+  "name": "rb-games-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build:web": "node scripts/build-web.mjs",
+    "preview": "node scripts/preview.mjs"
+  }
+}

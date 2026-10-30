@@ -1,5 +1,10 @@
 # RB Games portfolio
 
+PERIGEE PANIC can now be launched from `play/`. See [WEB-RELEASE.md](WEB-RELEASE.md)
+for offline installation, the optional account/payment backend, and the remaining
+owner setup before web purchases can be activated. The portfolio itself remains
+static; no payment secrets belong in GitHub Pages files.
+
 A complete static game portfolio for GitHub Pages, updated with the approved blue-and-red RB Games identity. No build step, account integrations, analytics or external font dependencies.
 
 ## Publish on your GitHub site

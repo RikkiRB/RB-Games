@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "PERIGEE PANIC: Stay In Orbit",
+  "short_name": "Perigee Panic",
+  "description": "Protect Earth. Keep your orbit. An arcade game by RB Games.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#090d19",
+  "theme_color": "#090d19",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

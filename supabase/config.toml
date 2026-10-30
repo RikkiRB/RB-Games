@@ -1,0 +1,4 @@
+# The handler verifies user tokens itself with Supabase Auth. Only public-config
+# and signature-verified Stripe webhooks are public routes.
+[functions.perigee-api]
+verify_jwt = false
