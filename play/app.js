@@ -45,7 +45,9 @@ async function requestJson(url, options = {}) {
   return body;
 }
 async function auth(path, body) {
-  return requestJson(config.supabaseUrl.replace(/\/$/, '') + '/auth/v1/' + path, {
+  const endpoint = new URL('/auth/v1/' + path, config.supabaseUrl);
+  if (path === 'otp') endpoint.searchParams.set('redirect_to', audience);
+  return requestJson(endpoint.href, {
     method: 'POST', headers: { apikey: config.supabaseAnonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
 }
