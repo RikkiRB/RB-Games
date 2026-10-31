@@ -1,6 +1,6 @@
 {
-  "version": "49fcb0502d654a40",
-  "totalBytes": 118220895,
+  "version": "d01903c0197b4126",
+  "totalBytes": 118223606,
   "assets": [
     "../assets/earth.png",
     "../assets/rb-games-horizontal.svg",
@@ -9,6 +9,7 @@
     "app-mode.js",
     "app.css",
     "app.js",
+    "auth-code.js",
     "auth-return.js",
     "config.js",
     "game-bridge.js",

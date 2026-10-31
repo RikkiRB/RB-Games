@@ -20,7 +20,7 @@ async function walk(directory) {
   }
   return result;
 }
-const shell = ['index.html', 'app.css', 'app.js', 'app-mode.js', 'auth-return.js', 'license.js', 'config.js', 'game-bridge.js', 'manifest.webmanifest', 'privacy.html', 'icons/icon-192.png', 'icons/icon-512.png', '../styles.css', '../assets/rb-games-horizontal.svg', '../assets/earth.png', '../assets/ship.png'];
+const shell = ['index.html', 'app.css', 'app.js', 'app-mode.js', 'auth-return.js', 'auth-code.js', 'license.js', 'config.js', 'game-bridge.js', 'manifest.webmanifest', 'privacy.html', 'icons/icon-192.png', 'icons/icon-512.png', '../styles.css', '../assets/rb-games-horizontal.svg', '../assets/earth.png', '../assets/ship.png'];
 const assets = [...shell, ...await walk(path.join(play, 'game')).then(files => files.map(file => path.relative(play, file).replaceAll(path.sep, '/')))].sort();
 const hash = createHash('sha256');
 let totalBytes = 0;

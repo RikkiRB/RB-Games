@@ -1,3 +1,4 @@
+import { verifyEmailCode } from './auth-code.js';
 import { shouldLaunchGame } from './app-mode.js';
 import { verifyLicense } from './license.js';
 import { readAuthRedirect } from './auth-return.js';
@@ -11,6 +12,7 @@ const authRedirect = readAuthRedirect(location.hash);
 if (authRedirect) history.replaceState(null, '', location.pathname + location.search);
 const $ = id => document.getElementById(id);
 const SESSION_KEY = 'rb.perigee.session.v1';
+const PENDING_KEY = 'rb.perigee.pending-email.v1';
 const LICENSE_KEY = 'rb.perigee.license.v1';
 const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(config.supabaseUrl || '') &&
   typeof config.supabaseAnonKey === 'string' && config.supabaseAnonKey.length > 20 &&
@@ -19,7 +21,9 @@ const accountsPreview = new URLSearchParams(location.search).has('accounts_previ
 const audience = new URL('./', location.href).href;
 let session = read(SESSION_KEY);
 let state = { owned: false, ready: false, paymentsLive: false, price: '', verification: 'unverified' };
-let refreshPromise, pendingEmail = '', installPrompt, serviceWorker, checkoutBusy = false;
+const pendingSignIn = read(PENDING_KEY);
+let refreshPromise, pendingEmail = pendingSignIn?.requestedAt > Date.now() - 3600000 ? pendingSignIn.email : '', installPrompt, serviceWorker, checkoutBusy = false;
+let codeBusy = false;
 
 function read(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
 function save(key, value) { try { value ? localStorage.setItem(key, JSON.stringify(value)) : localStorage.removeItem(key); } catch { /* Private browsing/storage limits must not stop free play. */ } }
@@ -32,6 +36,7 @@ function renderAccount() {
   const signedIn = !!session?.user?.id;
   $('email-form').hidden = signedIn || !!pendingEmail;
   $('link-pending').hidden = signedIn || !pendingEmail;
+  $('pending-email').textContent = pendingEmail || '';
   $('signed-in').hidden = !signedIn;
   $('account-email').textContent = session?.user?.email || '';
   $('ownership-status').textContent = state.owned ? 'Full Content Upgrade owned. Your cosmetic pack is unlocked.' : 'Your cosmetic pack is not unlocked on this account.';
@@ -66,7 +71,7 @@ async function finishMagicLink() {
     if (!user?.id || !user.email || !user.email_confirmed_at) throw new Error('Email not verified.');
     session = { ...authRedirect, user };
     save(SESSION_KEY, session);
-    pendingEmail = '';
+    pendingEmail = ''; save(PENDING_KEY, null);
     renderAccount();
     await restore();
   } catch {
@@ -166,11 +171,24 @@ $('app-offline').addEventListener('click', () => {
 if (appMode) start();
 for (const id of ['account-button', 'pack-button']) $(id).addEventListener('click', () => { openAccount(); if (session) restore(); });
 $('close-account').addEventListener('click', () => $('account-dialog').close());
-$('change-email').addEventListener('click', () => { pendingEmail = ''; renderAccount(); $('email').focus(); });
+$('change-email').addEventListener('click', () => { pendingEmail = ''; save(PENDING_KEY, null); $('signin-code').value = ''; status(''); renderAccount(); $('email').focus(); });
 $('email-form').addEventListener('submit', async event => {
-  event.preventDefault(); const button = event.submitter; button.disabled = true; status('Sending your sign-in link…');
-  try { const email = $('email').value.trim(); await auth('otp', { email, create_user: true }); pendingEmail = email; renderAccount(); status('Open the sign-in link from your email on this device.'); }
+  event.preventDefault(); const button = event.submitter; button.disabled = true; status('Sending your sign-in code…');
+  try { const email = $('email').value.trim(); await auth('otp', { email, create_user: true }); pendingEmail = email; save(PENDING_KEY, { email, requestedAt: Date.now() }); renderAccount(); status('Return to this game and enter the email code here.'); $('signin-code').focus(); }
   catch (error) { status(error.message); } finally { button.disabled = false; }
+});
+$('code-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (codeBusy || !pendingEmail) return;
+  codeBusy = true; $('verify-code').disabled = true; $('change-email').disabled = true;
+  status('Verifying your code…');
+  try {
+    session = await verifyEmailCode(pendingEmail, $('signin-code').value, auth);
+    save(SESSION_KEY, session); pendingEmail = ''; save(PENDING_KEY, null);
+    $('signin-code').value = ''; renderAccount();
+    await restore();
+  } catch (error) { status(error.message || 'That code has expired or is incorrect. Try the latest email code.'); }
+  finally { codeBusy = false; $('verify-code').disabled = false; $('change-email').disabled = false; }
 });
 $('buy-button').addEventListener('click', buy);
 $('restore-button').addEventListener('click', restore);
