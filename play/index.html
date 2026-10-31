@@ -32,6 +32,7 @@
         <p class="hook">Protect Earth.<br>Try not to crash into it.</p>
         <p class="intro-copy">Asteroids. UFOs. One fragile planet.<br>Take your ship into orbit and keep the chaos under control.</p>
         <button id="play-button" class="primary" type="button">PLAY NOW <span aria-hidden="true">↗</span></button>
+        <button class="secondary hero-install" data-install type="button">Add to Home Screen</button>
         <p class="compatibility">iPhone · iPad · Mac · PC<br>Free to play. No account needed.</p>
       </div>
       <div class="space-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><img class="earth" src="../assets/earth.png" alt=""><img class="ship" src="../assets/ship.png" alt=""><span class="coordinate">STAY IN ORBIT / 01</span></div>
@@ -41,13 +42,29 @@
       <iframe id="game-frame" title="PERIGEE PANIC" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
     </section>
     <div class="features">
-      <section class="info-card"><p class="eyebrow">YOUR OWN HOME SCREEN ICON</p><h2>One tap to orbit.</h2><p id="install-copy">On iPhone or iPad, open this page in Safari. Tap Share, then Add to Home Screen. Enable Open as Web App if shown.</p><button id="install-button" class="secondary" type="button" hidden>Install game</button></section>
-      <section class="info-card"><p class="eyebrow">TAKE THE GAME WITH YOU</p><h2>Save for offline play.</h2><p id="download-copy">Save the game on this device before travelling. Leaderboards and purchases need an internet connection.</p><button id="offline-button" class="secondary" type="button" disabled>Preparing offline support…</button><progress id="offline-progress" max="100" value="0" aria-label="Offline game download" hidden></progress><p id="offline-status" role="status"></p></section>
+      <section class="info-card"><p class="eyebrow">YOUR OWN HOME SCREEN ICON</p><h2>One tap to orbit.</h2><p id="install-copy">Keep a game icon on your device. Open it straight from your Home Screen.</p><button id="install-button" data-install class="secondary" type="button">Add to Home Screen</button></section>
+      <section class="info-card"><p class="eyebrow">TAKE THE GAME WITH YOU</p><h2>Save for offline play.</h2><p id="download-copy">Save the game on this device before travelling. Leaderboards and purchases need an internet connection.</p><button id="offline-button" class="secondary" type="button" disabled>Preparing offline support…</button><progress id="offline-progress" max="100" value="0" aria-label="Offline game download" hidden></progress><p id="offline-status" role="status"></p><button id="offline-install" data-install class="secondary" type="button" hidden>Add a Home Screen icon</button></section>
       <section class="info-card"><p class="eyebrow">THE ADD-ONS WORKSHOP</p><h2>Your ship. Your style.</h2><p>Cosmetics only. No gameplay advantage. Weapon skins apply to weapons collected during play.</p><p id="pack-status" role="status">Browser add-on purchases are not available yet. The free game is ready to play.</p><button id="pack-button" class="secondary" type="button" hidden>Open your add-ons</button></section>
     </div>
     <section class="controls"><h2>Keep your orbit.</h2><p><strong>Touch:</strong> use the on-screen flight and fire controls. Landscape gives you more room.</p><p><strong>Keyboard:</strong> W / ↑ boosts, S / ↓ brakes, A / D moves sideways. Aim with the mouse and click to fire.</p></section>
   </main>
   <footer><span>RB GAMES — NO RULES. JUST GAMES.</span><nav aria-label="Support links"><a href="privacy.html">Web game privacy</a><a href="../perigee-panic-support-privacy.html">Support</a><a href="https://play.google.com/store/apps/details?id=com.rbgames.perigeepanic" target="_blank" rel="noopener noreferrer">Google Play</a></nav></footer>
+  <dialog id="install-dialog" aria-labelledby="install-title">
+    <button id="close-install" class="close" type="button" aria-label="Close install guide">×</button>
+    <img class="install-icon" src="icons/icon-192.png" width="64" height="64" alt="">
+    <p class="eyebrow">YOUR NEXT LAUNCH: ONE TAP</p>
+    <h2 id="install-title">Put Panic on your Home Screen.</h2>
+    <p id="install-intro">Keep the game beside your other apps.</p>
+    <ol id="apple-install-steps" class="install-steps">
+      <li><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 9H4v12h16V9h-3M12 15V2m-4 4 4-4 4 4"/></svg></span><span>Tap <strong>Share</strong> in your browser. Look for the square with an upward arrow; it may be inside the <strong>…</strong> menu.</span></li>
+      <li><span class="step-icon" aria-hidden="true">＋</span><span>Scroll through the actions and tap <strong>Add to Home Screen</strong>.</span></li>
+      <li><span class="step-icon" aria-hidden="true">✓</span><span>Keep <strong>Open as Web App</strong> on, if shown, then tap <strong>Add</strong>.</span></li>
+    </ol>
+    <p id="other-install-steps" hidden>Open your browser menu and choose <strong>Install app</strong> or <strong>Add to Home Screen</strong>. On Mac Safari, use <strong>File → Add to Dock</strong>. If no install option is available, bookmark this page or open it in Safari or Chrome.</p>
+    <p id="install-browser-help" class="small">If Add to Home Screen is missing, open rbgames.dev/play/ in Safari. If needed, use Edit Actions in the Share menu to add the option.</p>
+    <p class="small">Then launch the PERIGEE PANIC icon. For offline play, open it while online and choose Save game for offline play. Your purchase can be restored with the same email.</p>
+    <button id="install-done" class="primary" type="button">Got it</button>
+  </dialog>
   <dialog id="account-dialog" aria-labelledby="account-title">
     <button id="close-account" class="close" type="button" aria-label="Close account">×</button><p class="eyebrow">ADD-ONS WORKSHOP</p><h2 id="account-title">A little more you.</h2><p>Sign in to buy or restore your cosmetic pack. Playing the free game never needs an account.</p>
     <form id="email-form"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254"><button class="primary" type="submit">Email me a sign-in link</button></form>

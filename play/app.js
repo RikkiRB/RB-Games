@@ -184,9 +184,42 @@ $('fullscreen-button').addEventListener('click', async () => {
 });
 $('exit-fullscreen').addEventListener('click', () => document.exitFullscreen?.());
 document.addEventListener('fullscreenchange', () => { $('exit-fullscreen').hidden = !document.fullscreenElement; $('fullscreen-button').hidden = !!document.fullscreenElement; });
-window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; $('install-button').hidden = false; });
-$('install-button').addEventListener('click', async () => { if (installPrompt) { await installPrompt.prompt(); installPrompt = null; $('install-button').hidden = true; } });
-window.addEventListener('appinstalled', () => { $('install-button').hidden = true; $('install-copy').textContent = 'The game has been added to your device.'; });
+const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standaloneMode = window.matchMedia('(display-mode: standalone)');
+let installedThisSession = false;
+const isStandalone = () => standaloneMode.matches || navigator.standalone === true;
+function updateInstallButtons() {
+  document.querySelectorAll('[data-install]').forEach(button => {
+    button.hidden = isStandalone() || installedThisSession || (button.id === 'offline-install' && !button.dataset.ready);
+    if (button.id !== 'offline-install') button.textContent = installPrompt ? 'Install game' : 'Add to Home Screen';
+  });
+  if (isStandalone() || installedThisSession) $('install-copy').textContent = 'Your game has its own icon. Launch PERIGEE PANIC from your device.';
+}
+function showInstallGuide() {
+  $('apple-install-steps').hidden = !isAppleMobile;
+  $('other-install-steps').hidden = isAppleMobile;
+  $('install-browser-help').hidden = !isAppleMobile;
+  $('install-intro').textContent = isAppleMobile ? 'Three quick steps in your browser. iPhone and iPad need you to confirm the Home Screen icon.' : 'Keep the game beside your other apps.';
+  if (!$('install-dialog').open) $('install-dialog').showModal();
+}
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault(); installPrompt = event; updateInstallButtons();
+});
+document.querySelectorAll('[data-install]').forEach(button => button.addEventListener('click', async () => {
+  if (!installPrompt) { showInstallGuide(); return; }
+  const prompt = installPrompt; installPrompt = null;
+  try {
+    await prompt.prompt();
+    const choice = await prompt.userChoice;
+    if (choice.outcome === 'accepted') installedThisSession = true;
+  } catch { showInstallGuide(); }
+  updateInstallButtons();
+}));
+$('close-install').addEventListener('click', () => $('install-dialog').close());
+$('install-done').addEventListener('click', () => $('install-dialog').close());
+window.addEventListener('appinstalled', () => { installedThisSession = true; updateInstallButtons(); });
+standaloneMode.addEventListener?.('change', updateInstallButtons);
+updateInstallButtons();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).then(async () => {
@@ -203,7 +236,8 @@ $('offline-button').addEventListener('click', () => {
   channel.port1.onmessage = event => {
     const info = event.data;
     $('offline-progress').value = info.total ? Math.floor(info.done / info.total * 100) : 0;
-    $('offline-status').textContent = info.type === 'done' ? 'Saved. You can launch and play this game offline on this device.' : info.type === 'error' ? 'The download was interrupted. Check your connection and available storage, then retry.' : 'Saving game files… ' + info.done + ' / ' + info.total;
+    $('offline-status').textContent = info.type === 'done' ? (isStandalone() ? 'Saved for offline play in this app.' : 'Game files saved in this browser. Add a Home Screen icon below to find the game easily.') : info.type === 'error' ? 'The download was interrupted. Check your connection and available storage, then retry.' : 'Saving game files… ' + info.done + ' / ' + info.total;
+    if (info.type === 'done') { $('offline-install').dataset.ready = 'true'; updateInstallButtons(); }
     if (info.type === 'done' || info.type === 'error') { $('offline-button').disabled = false; $('offline-button').textContent = info.type === 'done' ? 'Check offline download' : 'Retry offline download'; channel.port1.close(); }
   };
   serviceWorker.postMessage({ type: 'CACHE_GAME' }, [channel.port2]);
