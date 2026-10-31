@@ -11,7 +11,7 @@ function setup(navigator = {}, standalone = false) {
     return nodes.get(id);
   };
   const buttons = ['hero-install', 'install-button', 'offline-install'].map($);
-  vm.runInNewContext('let installPrompt;\n' + code, { navigator, $, document: { querySelectorAll: () => buttons }, window: { matchMedia: () => ({ matches: standalone, addEventListener() {} }), addEventListener: (e, fn) => events[e] = fn } });
+  vm.runInNewContext('let installPrompt;\n' + code, { navigator, matchMedia: () => ({ matches: false }), $, document: { querySelectorAll: () => buttons }, window: { matchMedia: () => ({ matches: standalone, addEventListener() {} }), addEventListener: (e, fn) => events[e] = fn } });
   return { $, buttons, events };
 }
 test('iPhone and desktop-mode iPad show manual Home Screen instructions', async () => {

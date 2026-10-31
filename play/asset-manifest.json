@@ -1,11 +1,12 @@
 {
-  "version": "e292360e9154a505",
-  "totalBytes": 118217359,
+  "version": "49fcb0502d654a40",
+  "totalBytes": 118220895,
   "assets": [
     "../assets/earth.png",
     "../assets/rb-games-horizontal.svg",
     "../assets/ship.png",
     "../styles.css",
+    "app-mode.js",
     "app.css",
     "app.js",
     "auth-return.js",

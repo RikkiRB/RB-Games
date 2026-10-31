@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090d19">
+  <meta name="apple-mobile-web-app-title" content="PERIGEE PANIC">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Play PERIGEE PANIC on iPhone, iPad, Mac and PC. Protect Earth, stay in orbit, and add the game to your Home Screen.">
@@ -49,6 +50,15 @@
     <section class="controls"><h2>Keep your orbit.</h2><p><strong>Touch:</strong> use the on-screen flight and fire controls. Landscape gives you more room.</p><p><strong>Keyboard:</strong> W / ↑ boosts, S / ↓ brakes, A / D moves sideways. Aim with the mouse and click to fire.</p></section>
   </main>
   <footer><span>RB GAMES — NO RULES. JUST GAMES.</span><nav aria-label="Support links"><a href="privacy.html">Web game privacy</a><a href="../perigee-panic-support-privacy.html">Support</a><a href="https://play.google.com/store/apps/details?id=com.rbgames.perigeepanic" target="_blank" rel="noopener noreferrer">Google Play</a></nav></footer>
+  <button id="app-options-button" type="button" aria-label="App options" hidden>⋯</button>
+  <dialog id="app-options-dialog" aria-labelledby="app-options-title">
+    <h2 id="app-options-title">App options</h2>
+    <p>Pause your run in the game before changing options.</p>
+    <button id="app-resume" class="primary" type="button">Back to game</button>
+    <button id="app-offline" class="secondary" type="button" disabled>Save game for offline play</button>
+    <p id="app-offline-status" role="status"></p>
+    <button id="app-account" class="secondary" type="button">Your purchases</button>
+  </dialog>
   <dialog id="install-dialog" aria-labelledby="install-title">
     <button id="close-install" class="close" type="button" aria-label="Close install guide">×</button>
     <img class="install-icon" src="icons/icon-192.png" width="64" height="64" alt="">

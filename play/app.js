@@ -1,5 +1,9 @@
+import { shouldLaunchGame } from './app-mode.js';
 import { verifyLicense } from './license.js';
 import { readAuthRedirect } from './auth-return.js';
+
+const appMode = shouldLaunchGame({ search: location.search, standalone: navigator.standalone === true, displayStandalone: matchMedia('(display-mode: standalone)').matches, displayFullscreen: matchMedia('(display-mode: fullscreen)').matches });
+if (appMode) document.documentElement.classList.add('app-mode');
 
 const config = window.PERIGEE_WEB_CONFIG || {};
 const authRedirect = readAuthRedirect(location.hash);
@@ -150,6 +154,16 @@ function start() {
   $('game-frame').focus(); $('player').scrollIntoView({ block: 'start', behavior: 'instant' }); connection();
 }
 $('play-button').addEventListener('click', start);
+$('app-options-button').hidden = !appMode;
+$('app-options-button').addEventListener('click', () => $('app-options-dialog').showModal());
+$('app-resume').addEventListener('click', () => { $('app-options-dialog').close(); $('game-frame').focus(); });
+$('app-account').addEventListener('click', () => { $('app-options-dialog').close(); openAccount(); if (session) restore(); });
+$('app-offline').addEventListener('click', () => {
+  $('offline-button').click();
+  $('app-offline').disabled = true;
+  $('app-offline-status').textContent = 'Saving game files…';
+});
+if (appMode) start();
 for (const id of ['account-button', 'pack-button']) $(id).addEventListener('click', () => { openAccount(); if (session) restore(); });
 $('close-account').addEventListener('click', () => $('account-dialog').close());
 $('change-email').addEventListener('click', () => { pendingEmail = ''; renderAccount(); $('email').focus(); });
@@ -187,7 +201,7 @@ document.addEventListener('fullscreenchange', () => { $('exit-fullscreen').hidde
 const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const standaloneMode = window.matchMedia('(display-mode: standalone)');
 let installedThisSession = false;
-const isStandalone = () => standaloneMode.matches || navigator.standalone === true;
+const isStandalone = () => standaloneMode.matches || navigator.standalone === true || matchMedia('(display-mode: fullscreen)').matches;
 function updateInstallButtons() {
   document.querySelectorAll('[data-install]').forEach(button => {
     button.hidden = isStandalone() || installedThisSession || (button.id === 'offline-install' && !button.dataset.ready);
@@ -224,10 +238,10 @@ updateInstallButtons();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).then(async () => {
     const registration = await navigator.serviceWorker.ready;
-    serviceWorker = registration.active; $('offline-button').disabled = false; $('offline-button').textContent = 'Save game for offline play';
+    serviceWorker = registration.active; $('app-offline').disabled = false; $('offline-button').disabled = false; $('offline-button').textContent = 'Save game for offline play';
     const manifest = await fetch('asset-manifest.json').then(r => r.json());
     $('download-copy').textContent = 'Download about ' + Math.ceil(manifest.totalBytes / 1048576) + ' MB to this device. Leaderboards and purchases need an internet connection.';
-  }).catch(() => { $('offline-button').textContent = 'Offline saving unavailable'; $('offline-status').textContent = 'You can still play while connected.'; });
+  }).catch(() => { $('offline-button').textContent = 'Offline saving unavailable'; $('offline-status').textContent = 'You can still play while connected.'; $('app-offline-status').textContent = 'Offline saving unavailable. You can still play online.'; });
 }
 $('offline-button').addEventListener('click', () => {
   if (!serviceWorker) return;
@@ -237,6 +251,8 @@ $('offline-button').addEventListener('click', () => {
     const info = event.data;
     $('offline-progress').value = info.total ? Math.floor(info.done / info.total * 100) : 0;
     $('offline-status').textContent = info.type === 'done' ? (isStandalone() ? 'Saved for offline play in this app.' : 'Game files saved in this browser. Add a Home Screen icon below to find the game easily.') : info.type === 'error' ? 'The download was interrupted. Check your connection and available storage, then retry.' : 'Saving game files… ' + info.done + ' / ' + info.total;
+    $('app-offline-status').textContent = $('offline-status').textContent;
+    if (info.type === 'done' || info.type === 'error') $('app-offline').disabled = false;
     if (info.type === 'done') { $('offline-install').dataset.ready = 'true'; updateInstallButtons(); }
     if (info.type === 'done' || info.type === 'error') { $('offline-button').disabled = false; $('offline-button').textContent = info.type === 'done' ? 'Check offline download' : 'Retry offline download'; channel.port1.close(); }
   };
