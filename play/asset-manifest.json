@@ -1,11 +1,15 @@
 {
-  "version": "ecbe34a63d54a756",
-  "totalBytes": 118223605,
+  "version": "fd85c0801d52844f",
+  "totalBytes": 118233186,
   "assets": [
+    "../analytics-privacy.js",
+    "../analytics.css",
+    "../analytics.js",
     "../assets/earth.png",
     "../assets/rb-games-horizontal.svg",
     "../assets/ship.png",
     "../styles.css",
+    "../website-privacy.html",
     "app-mode.js",
     "app.css",
     "app.js",

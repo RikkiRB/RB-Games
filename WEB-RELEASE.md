@@ -79,8 +79,8 @@ business verification and accepting provider terms are owner actions.
    Full refunds revoke access. Partial refunds preserve it. Disputes suspend
    access pending support review. Duplicate and out-of-order events are safe.
 7. Put only the public Supabase URL, public publishable (or legacy anon) key, matching function URL and
-   optional ES256 **public** JWK into `play/config.js`. The CSP intentionally
-   permits only your own files and Supabase HTTPS APIs. Run `npm run build:web`
+   optional ES256 **public** JWK into `play/config.js`. The CSP permits local files, Supabase HTTPS APIs, and the exact HeyCatch
+   SDK/ingestion origins documented in README.md for optional analytics. Run `npm run build:web`
    after changing public configuration so the offline cache version changes.
 8. In private setup, run `node scripts/generate-license-key.mjs` if offline paid
    cosmetics are needed. Store only its private JWK as a backend secret; put its
