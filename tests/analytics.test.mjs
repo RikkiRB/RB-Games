@@ -25,7 +25,7 @@ test('no SDK loads before consent; withdrawal during download prevents initializ
   consent = true;
   const pending = controller.start();
   consent = false;
-  release({ analytics: { init() { inits++; } } });
+  release({ analytics: { init() { inits++; }, optInCapturing() {} } });
   await pending; assert.equal(inits, 0);
 });
 test('revoking consent stops capture and the event hook drops subsequent events', async () => {
@@ -35,11 +35,32 @@ test('revoking consent stops capture and the event hook drops subsequent events'
   assert.equal(config.autocapture, false); assert.equal(config.requestBatching, false);
   consent = false; controller.stop();
   assert.equal(stops, 1); assert.equal(config.beforeSend({ event: '$pageview' }), null);
-  consent = true; await controller.start(); assert.equal(starts, 1);
+  consent = true; await controller.start(); assert.equal(starts, 2);
 });
 test('failed analytics download can retry and cannot require game code to load', async () => {
   let attempts = 0, inits = 0;
-  const controller = createAnalyticsController({ allowed: () => true, projectKey: 'test', load: async () => { if (++attempts === 1) throw new Error('offline'); return { analytics: { init() { inits++; } } }; } });
+  const controller = createAnalyticsController({ allowed: () => true, projectKey: 'test', load: async () => { if (++attempts === 1) throw new Error('offline'); return { analytics: { init() { inits++; }, optInCapturing() {} } }; } });
   await assert.rejects(controller.start(), /offline/);
   await controller.start(); assert.equal(inits, 1);
+});
+
+
+test('allowing again after withdrawal and reload clears persisted SDK opt-out', async () => {
+  let consent = true, persistedOptOut = false, capturing = false;
+  const load = async () => ({ analytics: {
+    init() { capturing = !persistedOptOut; },
+    optOutCapturing() { persistedOptOut = true; capturing = false; },
+    optInCapturing() { persistedOptOut = false; capturing = true; },
+  } });
+  const firstPage = createAnalyticsController({ allowed: () => consent, projectKey: 'test', load });
+  await firstPage.start();
+  assert.equal(capturing, true);
+  consent = false; firstPage.stop();
+  assert.equal(persistedOptOut, true);
+  const reloadedPage = createAnalyticsController({ allowed: () => consent, projectKey: 'test', load });
+  await reloadedPage.start();
+  assert.equal(capturing, false);
+  consent = true; await reloadedPage.start();
+  assert.equal(persistedOptOut, false);
+  assert.equal(capturing, true);
 });
