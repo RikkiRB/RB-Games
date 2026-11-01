@@ -5,7 +5,7 @@ for offline installation, the optional account/payment backend, and the remainin
 owner setup before web purchases can be activated. The portfolio itself remains
 static; no payment secrets belong in GitHub Pages files.
 
-A complete static game portfolio for GitHub Pages, updated with the approved blue-and-red RB Games identity. No build step, account integrations, analytics or external font dependencies.
+A complete static game portfolio for GitHub Pages, updated with the approved blue-and-red RB Games identity. The portfolio has no build step or external font dependencies. Optional HeyCatch analytics loads only after visitor consent.
 
 ## Publish on your GitHub site
 
@@ -77,3 +77,13 @@ Keep applicable artwork and third-party licences and credits in the games themse
 ## Preview
 
 Open `index.html` directly, or serve this directory with any static web server. All displayed content and game links work without JavaScript. JavaScript enables the mobile menu, galleries and optional email button. The page respects reduced-motion settings.
+
+## Optional website analytics
+
+`analytics.js` loads the pinned HeyCatch SDK 0.8.3 from the official setup guide's CDN only after consent. The homepage and `/play/` share a choice stored in localStorage. Rejecting, revoking, DNT and GPC stop capture. Automatic click/form capture is disabled, text/attributes are masked, and `analytics-privacy.js` strips URL query strings/fragments and redacts email-shaped values before delivery. The SDK separately maintains its own attribution keys and redacts authentication tokens. No account identity or purchase events are supplied.
+
+The game iframe contains no new tracker. Analytics loads independently of the game, and a failed or blocked CDN request must never block play. Local consent scripts and the privacy page are included in the offline shell; the remote SDK and ingestion requests are not cached by the service worker. Changing any shell file requires `npm run build:web`.
+
+Publishing `main` to GitHub does not update `rbgames.dev`: production is Sites project `appgprj_6ae5174a54448191bb54be8fc4600f95`. Apply these same changes to its current source and publish through Sites. Then visit the production homepage and `/play/`, allow optional analytics, and confirm real events via HeyCatch → Analytics → Install → I've installed. Do not mark the connection verified until HeyCatch reports receiving events.
+
+Official references: https://heycatch.crisp.help/en/article/any-other-website-1mbs026/ and https://www.npmjs.com/package/@heycatch/sdk (privacy and consent options).
