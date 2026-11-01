@@ -43,7 +43,9 @@ export function createAnalyticsController({ load, allowed, projectKey }) {
           respectDnt: true,
           beforeSend: event => allowed() ? cleanAnalyticsValue(event) : null,
         });
-      } else sdk.optInCapturing();
+      }
+      // A previous visit may have persisted opt-out before this page loaded.
+      if (allowed()) sdk.optInCapturing();
     },
     stop() { sdk?.optOutCapturing(); },
   };
