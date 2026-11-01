@@ -50,4 +50,3 @@ export function createAnalyticsController({ load, allowed, projectKey }) {
     stop() { sdk?.optOutCapturing(); },
   };
 }
-
