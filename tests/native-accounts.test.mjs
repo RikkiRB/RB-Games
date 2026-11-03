@@ -66,14 +66,21 @@ test('one App Store purchase cannot be claimed by two accounts, including repeat
   assert.equal([...rows.values()][0].user_id, USER);
 });
 
-test('TestFlight receipts are usable in the native test build and never grant production web ownership', async () => {
+test('TestFlight receipts never grant production web or native ownership', async () => {
   const f = fixture({ sandbox: true });
-  const linked = await (await f.request('/apple/claim', 'POST', { receiptData: RECEIPT })).json();
-  assert.equal(linked.owned, true); assert.equal(linked.license, null);
-  assert.equal([...f.rows.values()][0].livemode, false);
+  assert.equal((await f.request('/apple/claim', 'POST', { receiptData: RECEIPT })).status, 409);
+  assert.equal(f.rows.size, 0);
   assert.equal((await (await f.request('/me', 'GET', undefined, 'valid', 'https://rbgames.dev')).json()).owned, false);
-  assert.equal((await (await f.request('/native/me')).json()).owned, true);
+  assert.equal((await (await f.request('/native/me')).json()).owned, false);
   assert.ok(f.calls.some(call => call.url === 'https://sandbox.itunes.apple.com/verifyReceipt'));
+});
+
+test('TestFlight receipts work against a separate test-mode backend', async () => {
+  const f = fixture({ sandbox: true, env: { PAYMENTS_LIVE: 'false' } });
+  const response = await f.request('/apple/claim', 'POST', { receiptData: RECEIPT });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).owned, true);
+  assert.equal([...f.rows.values()][0].livemode, false);
 });
 
 test('refunded Apple purchases revoke and temporary provider failures do not overwrite ownership', async () => {
