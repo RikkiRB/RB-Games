@@ -11,6 +11,7 @@
   // the extension container while older JavaScript events read project globals.
   const global = scene => scene.getGame().getVariablesForExtension?.('RBPC_PaidContent') || scene.getGame().getVariables();
   const notify = type => parent.postMessage({ type }, location.origin);
+  window.RBPerigeeWeb = Object.freeze({ openAccount: () => notify('RB_WEB_RESTORE') });
   const override = (name, fn) => { const entry = gdjs['evtsExt__InAppPurchase__' + name]; if (entry) entry.func = fn; };
   const apply = scene => {
     lastScene = scene;

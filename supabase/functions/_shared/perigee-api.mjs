@@ -32,6 +32,20 @@ export function playPurchaseState(purchase, accountId, allowLegacy = false, allo
   else ensure(allowLegacy, 409, 'Contact support to link this older purchase.');
   return true;
 }
+// The current Cordova 13 store supplies an App Store application receipt.
+// Validate it only on the server. Never trust a transaction id or client flag.
+// Keep this adapter isolated for migration to App Store Server API / StoreKit 2.
+export function applePurchaseState(result, userId, transactionId) {
+  ensure(result?.status === 0 && result.receipt?.bundle_id === PACKAGE, 409, 'Apple could not verify a purchase for this game.');
+  ensure(['Production', 'Sandbox'].includes(result.environment), 409, 'Unknown App Store purchase environment.');
+  const purchases = result.receipt.in_app;
+  ensure(Array.isArray(purchases), 409, 'No Extras Pack purchase was found in this App Store receipt.');
+  const matches = purchases.filter(item => item.product_id === PRODUCT && !item.cancellation_date && !item.cancellation_date_ms && String(item.quantity) === '1' && /^\d{1,30}$/.test(String(item.original_transaction_id || '')) && (!transactionId || item.transaction_id === transactionId || item.original_transaction_id === transactionId));
+  const purchase = matches.sort((a, b) => Number(b.purchase_date_ms || 0) - Number(a.purchase_date_ms || 0))[0];
+  ensure(purchase, 409, 'This Extras Pack purchase is missing or has been refunded.');
+  if (purchase.app_account_token) ensure(purchase.app_account_token.toLowerCase() === userId.toLowerCase(), 403, 'This purchase belongs to a different RB Games account.');
+  return { reference: String(purchase.original_transaction_id), livemode: result.environment === 'Production' };
+}
 export async function signLicense(privateJwk, userId, audience, now = Date.now()) {
   const seconds = Math.floor(now / 1000);
   const header = b64url(encode(JSON.stringify({ alg: 'ES256', typ: 'JWT' })));
@@ -46,6 +60,9 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
   const paymentsLive = () => env.PAYMENTS_LIVE === 'true';
   const ready = () => !!(env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_ID && env.STRIPE_WEBHOOK_SECRET && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY && env.WEB_GAME_URL && env.COMMERCE_ENABLED === 'true');
   const allowedOrigin = () => new URL(env.WEB_GAME_URL).origin;
+  // Cordova has no web origin (or uses its local app origin). These are not
+  // credentials: all private routes still validate the user's Supabase session.
+  const nativeOrigins = new Set(['null', 'app://localhost', 'ionic://localhost', 'http://localhost', 'https://localhost']);
   async function externalJson(url, init = {}, errorStatus = 503) {
     const response = await fetcher(url, { ...init, signal: AbortSignal.timeout(15000) });
     let data; try { data = await response.json(); } catch { data = null; }
@@ -112,8 +129,23 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
     }
     return purchase;
   }
-  async function me(user) {
-    const purchases = await purchasesFor(user.id);
+  async function verifyApple(receiptData, userId, transactionId) {
+    ensure(env.APPLE_LINKING_ENABLED === 'true', 503, 'App Store account linking is not available yet. Your App Store purchase still works in this app.');
+    const payload = JSON.stringify({ 'receipt-data': receiptData, ...(env.APPLE_RECEIPT_SHARED_SECRET ? { password: env.APPLE_RECEIPT_SHARED_SECRET } : {}) });
+    const send = url => externalJson(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload });
+    let result = await send('https://buy.itunes.apple.com/verifyReceipt');
+    if (result.status === 21007) result = await send('https://sandbox.itunes.apple.com/verifyReceipt');
+    ensure(![21000, 21004, 21005, 21009].includes(result.status) && !(result.status >= 21100 && result.status <= 21199), 503, 'Apple purchase verification is temporarily unavailable.');
+    return applePurchaseState(result, userId, transactionId);
+  }
+  async function me(user, native = false) {
+    let purchases = await purchasesFor(user.id);
+    // TestFlight/App Review receipts may unlock the native test build, never
+    // the production website. Stripe and Play retain their normal mode checks.
+    if (native && paymentsLive()) {
+      const sandbox = await database('pp_purchases?user_id=eq.' + encodeURIComponent(user.id) + '&livemode=eq.false&provider=eq.apple_appstore&select=provider,reference,status,provider_token,livemode');
+      purchases = [...purchases, ...sandbox];
+    }
     // Recheck linked Play receipts whenever ownership is restored. Network
     // failure never writes a revocation or generates a fresh offline licence.
     for (const row of purchases.filter(row => row.provider === 'google_play')) {
@@ -123,8 +155,20 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
         else throw error;
       }
     }
+    for (const row of purchases.filter(row => row.provider === 'apple_appstore')) {
+      try {
+        const verified = await verifyApple(row.provider_token, user.id, row.reference);
+        ensure(verified.reference === row.reference && verified.livemode === row.livemode, 409, 'App Store purchase environment changed.');
+        if (row.status !== 'active') await record(row.provider, row.reference, user.id, 'active', row.provider_token, Math.floor(clock() / 1000), row.livemode);
+        row.status = 'active';
+      } catch (error) {
+        if (error.status === 409) { await record(row.provider, row.reference, user.id, 'revoked', row.provider_token, Math.floor(clock() / 1000), row.livemode); row.status = 'revoked'; }
+        else throw error;
+      }
+    }
     const owned = purchases.some(row => row.status === 'active');
-    const license = owned && env.LICENSE_PRIVATE_JWK ? await signLicense(JSON.parse(env.LICENSE_PRIVATE_JWK), user.id, env.WEB_GAME_URL, clock()) : null;
+    const productionOwned = purchases.some(row => row.status === 'active' && row.livemode === paymentsLive());
+    const license = productionOwned && env.LICENSE_PRIVATE_JWK ? await signLicense(JSON.parse(env.LICENSE_PRIVATE_JWK), user.id, env.WEB_GAME_URL, clock()) : null;
     return { owned, product: PRODUCT, license, user: { id: user.id, email: user.email } };
   }
   async function createCheckout(user) {
@@ -187,16 +231,29 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
     let responseHeaders = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', Vary: 'Origin' };
     try {
       ensure(env.WEB_GAME_URL && /^https:\/\//.test(env.WEB_GAME_URL) && env.WEB_GAME_URL.endsWith('/'), 503, 'Web accounts are not configured yet.');
-      ensure(!origin || origin === allowedOrigin(), 403, 'This website is not allowed.');
-      if (origin) responseHeaders = { ...responseHeaders, 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
-      if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: responseHeaders });
       const path = new URL(request.url).pathname.replace(/^.*\/perigee-api/, '');
+      const nativeRoute = ['/public-config', '/native/me', '/google-play/claim', '/apple/claim', '/account'].includes(path);
+      ensure(!origin || origin === allowedOrigin() || (nativeRoute && nativeOrigins.has(origin)), 403, 'This website is not allowed.');
+      if (origin) responseHeaders = { ...responseHeaders, 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS' };
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: responseHeaders });
       let result;
       if (request.method === 'GET' && path === '/public-config') {
         let price = null; if (ready()) { try { price = await getPrice(); } catch { /* Unavailable price keeps checkout disabled. */ } }
-        result = { checkoutReady: ready() && !!price, paymentsLive: paymentsLive(), price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON };
+        result = { checkoutReady: ready() && !!price, paymentsLive: paymentsLive(), price, product: PRODUCT, playLinkingReady: !!env.GOOGLE_SERVICE_ACCOUNT_JSON, appleLinkingReady: env.APPLE_LINKING_ENABLED === 'true', nativeAccountsReady: true };
       } else if (request.method === 'POST' && path === '/stripe-webhook') result = await processWebhook(request);
       else if (request.method === 'GET' && path === '/me') result = await me(await authenticate(request));
+      else if (request.method === 'GET' && path === '/native/me') result = await me(await authenticate(request), true);
+      else if (request.method === 'DELETE' && path === '/account') {
+        const user = await authenticate(request);
+        ensure(request.headers.get('content-type')?.includes('application/json'), 400, 'Confirm account deletion in the account screen.');
+        const body = await request.text();
+        ensure(body.length < 256, 413, 'Request too large.');
+        let confirmation; try { confirmation = JSON.parse(body); } catch { throw new HttpError(400, 'Invalid account request.'); }
+        ensure(confirmation.confirm === 'DELETE MY ACCOUNT', 400, 'Confirm account deletion in the account screen.');
+        const response = await fetcher(env.SUPABASE_URL + '/auth/v1/admin/users/' + user.id, { method: 'DELETE', headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ should_soft_delete: false }), signal: AbortSignal.timeout(15000) });
+        ensure(response.ok, 503, 'Account deletion could not be completed. Please try again.');
+        result = { deleted: true };
+      }
       else if (request.method === 'POST' && path === '/checkout') result = await createCheckout(await authenticate(request));
       else if (request.method === 'POST' && path === '/google-play/claim') {
         const user = await authenticate(request);
@@ -208,6 +265,15 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
         const reference = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', encode(data.purchaseToken))));
         await record('google_play', reference, user.id, 'active', data.purchaseToken, Math.floor(clock() / 1000), !purchase.testPurchaseContext);
         result = await me(user);
+      } else if (request.method === 'POST' && path === '/apple/claim') {
+        const user = await authenticate(request);
+        ensure(Number(request.headers.get('content-length') || 0) <= 262144, 413, 'Request too large.');
+        const raw = await request.text(); ensure(raw.length <= 262144, 413, 'Request too large.');
+        let data; try { data = JSON.parse(raw); } catch { throw new HttpError(400, 'Invalid purchase request.'); }
+        ensure(typeof data.receiptData === 'string' && data.receiptData.length >= 16 && data.receiptData.length <= 240000 && /^[A-Za-z0-9+/]+={0,2}$/.test(data.receiptData), 400, 'A valid App Store receipt is required.');
+        const purchase = await verifyApple(data.receiptData, user.id);
+        await record('apple_appstore', purchase.reference, user.id, 'active', data.receiptData, Math.floor(clock() / 1000), purchase.livemode);
+        result = await me(user, true);
       } else throw new HttpError(404, 'Not found.');
       return new Response(JSON.stringify(result), { headers: responseHeaders });
     } catch (error) {
