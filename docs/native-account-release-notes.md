@@ -9,7 +9,7 @@ Updated 3 November 2026. This record accompanies the GDevelop account-linking up
 - The account dialog supports sign-in, restore of a previously linked pack, linking an on-device store receipt, sign-out and permanent account deletion after typed confirmation.
 - Gold, cosmic diamonds, unlocked trails, equipped trail and objective progress stay in the existing local save. No earned wallet is uploaded or silently reassigned to an account. There is no cloud progression sync in this release.
 - Store receipt verification is performed by the backend. The game cannot grant valid account ownership with a local flag, currency balance or checkout return URL.
-- A purchase reference can belong to one RB Games account. Apple sandbox/TestFlight ownership is separated from production web ownership.
+- A purchase reference can belong to one RB Games account. The prepared security fix rejects Apple sandbox/TestFlight receipts on the production backend, including for native apps. TestFlight linking requires a separate test-mode backend.
 - Google Play linking still requires an app-scoped Developer API service account configured on the backend. Until configured, its linking button is disabled; normal Play purchase/restore is retained.
 - Apple verification for the existing Cordova StoreKit 1 plugin uses Apple's legacy server receipt endpoint. It is isolated for migration to App Store Server API / StoreKit 2. No Apple private credential is embedded in the app. An optional app-specific receipt shared secret may be stored server-side.
 
@@ -45,13 +45,13 @@ No card number or Google/Apple password is requested by RB Games. Stripe handles
 - Optional account creation requires an in-app account-deletion path; included in the dialog.
 - Preserve Apple IAP as the native purchase route. Account restore recognises content obtained elsewhere without directing players to external checkout.
 - Test on a real TestFlight/App Store sandbox device: code sign-in, native IAP product loading, purchase/restore, Apple receipt availability, account link, sign-out and local progression preservation.
-- Sandbox account ownership must stay out of the live web entitlement. Test a real production receipt separately when available.
+- Sandbox account ownership must stay out of both live web and live native entitlements. Use a separate test-mode backend for TestFlight linking; test a real production receipt separately when available.
 - Do not mark this release ready solely because automated simulations pass. Actual exported native receipt delivery and store permission/configuration must be verified.
 
 ## Deployment and validation log
 
 - Native UI and account service added to the working GDevelop project and saved.
-- Backend Apple receipt adapter, authenticated native restore, account deletion and provider migration prepared.
+- Backend Apple receipt adapter, authenticated native restore, account deletion and provider migration deployed. A subsequent sandbox-isolation security fix is prepared locally and must be deployed before Apple linking is enabled.
 - Automated payment and account tests: running during implementation; record the final result below before release.
 - Google service-account activation: pending verification/configuration.
 - Native store device tests: pending; must be performed on the exported build.

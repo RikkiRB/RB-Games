@@ -140,12 +140,8 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
   }
   async function me(user, native = false) {
     let purchases = await purchasesFor(user.id);
-    // TestFlight/App Review receipts may unlock the native test build, never
-    // the production website. Stripe and Play retain their normal mode checks.
-    if (native && paymentsLive()) {
-      const sandbox = await database('pp_purchases?user_id=eq.' + encodeURIComponent(user.id) + '&livemode=eq.false&provider=eq.apple_appstore&select=provider,reference,status,provider_token,livemode');
-      purchases = [...purchases, ...sandbox];
-    }
+    // The client cannot prove it is a TestFlight build. TestFlight ownership
+    // must use a separate test backend; production never reads sandbox rows.
     // Recheck linked Play receipts whenever ownership is restored. Network
     // failure never writes a revocation or generates a fresh offline licence.
     for (const row of purchases.filter(row => row.provider === 'google_play')) {
@@ -272,6 +268,7 @@ export function createHandler(env, { fetcher = fetch, clock = Date.now } = {}) {
         let data; try { data = JSON.parse(raw); } catch { throw new HttpError(400, 'Invalid purchase request.'); }
         ensure(typeof data.receiptData === 'string' && data.receiptData.length >= 16 && data.receiptData.length <= 240000 && /^[A-Za-z0-9+/]+={0,2}$/.test(data.receiptData), 400, 'A valid App Store receipt is required.');
         const purchase = await verifyApple(data.receiptData, user.id);
+        ensure(purchase.livemode === paymentsLive(), 409, 'This purchase belongs to a different payment environment.');
         await record('apple_appstore', purchase.reference, user.id, 'active', data.receiptData, Math.floor(clock() / 1000), purchase.livemode);
         result = await me(user, true);
       } else throw new HttpError(404, 'Not found.');
